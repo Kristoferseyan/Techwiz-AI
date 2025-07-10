@@ -1,0 +1,119 @@
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+### Security & Privacy ###
+# Environment variables and configuration files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+application-*.properties
+application-*.yml
+application-*.yaml
+
+# API keys and secrets
+secrets/
+*.key
+*.pem
+*.p12
+*.jks
+*.keystore
+*.truststore
+keystore.properties
+google-services.json
+GoogleService-Info.plist
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Log files
+*.log
+logs/
+log/
+
+# Temporary files
+*.tmp
+*.temp
+*.cache
+*.pid
+*.seed
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Personal notes and documentation
+TODO.md
+NOTES.md
+notes/
+docs/private/
+
+# Backup files
+*.backup
+*.bak
+*.old
+
+# Test coverage reports
+coverage/
+.nyc_output/
+
+# Node modules (if using Node.js tools)
+node_modules/
+
+# Certificates and keys
+*.crt
+*.csr
+*.der
+*.pfx
+*.p7b
+*.p7c
+*.p7r
+*.p7s
+*.spc
+
+# Docker secrets
+docker-compose.override.yml
+.dockerignore.local
