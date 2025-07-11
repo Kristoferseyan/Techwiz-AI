@@ -4,10 +4,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.techwiz.services.Problems.ProblemServices;
+
 
 
 
@@ -28,5 +30,12 @@ public class ProblemsController {
     public ResponseEntity<?> getFeaturedProblems(){
         return ResponseEntity.ok(problemServices.displayFeaturedProblems());
     }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'SUPERADMIN')")
+    @GetMapping("/problemsByCategory/{name}")
+    public ResponseEntity<?> getProblemsByCategory(@PathVariable String name) {
+        return ResponseEntity.ok(problemServices.displayProblemsByCategory(name));
+    }
+    
     
 }

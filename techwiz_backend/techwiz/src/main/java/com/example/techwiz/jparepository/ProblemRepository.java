@@ -8,4 +8,5 @@ import com.example.techwiz.model.Problems;
 
 public interface ProblemRepository extends JpaRepository<Problems, Integer>{
    List<Problems> findByFeaturedTrue();
+   List<Problems> findByCategories_Id(Integer id);
 }

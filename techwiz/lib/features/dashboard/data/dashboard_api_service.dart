@@ -104,7 +104,6 @@ class DashboardApiService {
       }
     } catch (e) {
       print('Error fetching categories: $e');
-      // Fallback to static categories if API fails
       return ['All', 'General', 'Hardware', 'Software', 'Network', 'Security'];
     }
   }
@@ -140,7 +139,10 @@ class DashboardApiService {
     String? token,
   }) async {
     try {
+      print('Filtering by category: "$category"');
+      
       if (category == 'All') {
+        print('Category is "All", fetching all problems');
         final response = await httpClient.get(
           Uri.parse('$baseUrl/problems'),
           headers: _getHeaders(token),
@@ -154,27 +156,22 @@ class DashboardApiService {
         }
       }
 
+      // Use the new category filter endpoint
+      print('Using category filter endpoint: $baseUrl/problemsByCategory/$category');
       final response = await httpClient.get(
-        Uri.parse('$baseUrl/category'),
+        Uri.parse('$baseUrl/problemsByCategory/${Uri.encodeComponent(category)}'),
         headers: _getHeaders(token),
       );
 
+      print('Category filter response status: ${response.statusCode}');
+      print('Category filter response body: ${response.body}');
+
       if (response.statusCode == 200) {
-        final List<dynamic> categories = json.decode(response.body);
-
-        final categoryData = categories.firstWhere(
-          (cat) => cat['name'] == category,
-          orElse: () => null,
-        );
-
-        if (categoryData != null && categoryData['problems'] != null) {
-          final List<dynamic> problems = categoryData['problems'];
-          return problems.map((json) => _issueFromProblemsDto(json)).toList();
-        } else {
-          return [];
-        }
+        final List<dynamic> data = json.decode(response.body);
+        print('Found ${data.length} problems for category "$category"');
+        return data.map((json) => _issueFromProblemsDto(json)).toList();
       } else {
-        throw Exception('Failed to load category: ${response.statusCode}');
+        throw Exception('Failed to load category "$category": ${response.statusCode}');
       }
     } catch (e) {
       print('Error fetching issues by category: $e');
