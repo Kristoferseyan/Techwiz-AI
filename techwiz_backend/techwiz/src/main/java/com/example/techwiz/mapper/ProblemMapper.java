@@ -1,6 +1,6 @@
 package com.example.techwiz.mapper;
 
-import com.example.techwiz.dto.ProblemsDto;
+import com.example.techwiz.dto.Problems.ProblemsDto;
 import com.example.techwiz.model.Problems;
 
 public class ProblemMapper {

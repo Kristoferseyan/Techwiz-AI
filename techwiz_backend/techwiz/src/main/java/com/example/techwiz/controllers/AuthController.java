@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.techwiz.dto.AuthDto;
-import com.example.techwiz.dto.LoginResponseDto;
+import com.example.techwiz.dto.Auth.AuthDto;
+import com.example.techwiz.dto.Auth.LoginResponseDto;
 import com.example.techwiz.services.AuthService;
 
 import jakarta.validation.Valid;

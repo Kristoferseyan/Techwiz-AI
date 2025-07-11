@@ -9,8 +9,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.example.techwiz.dto.AuthDto;
-import com.example.techwiz.dto.LoginResponseDto;
+import com.example.techwiz.dto.Auth.AuthDto;
+import com.example.techwiz.dto.Auth.LoginResponseDto;
 import com.example.techwiz.jparepository.UsersRepository;
 import com.example.techwiz.model.Roles;
 import com.example.techwiz.model.Users;

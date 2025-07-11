@@ -1,6 +1,6 @@
 package com.example.techwiz.mapper;
 
-import com.example.techwiz.dto.UserRolesDto;
+import com.example.techwiz.dto.Users.UserRolesDto;
 import com.example.techwiz.model.Users;
 
 public class UserRoleMapper {

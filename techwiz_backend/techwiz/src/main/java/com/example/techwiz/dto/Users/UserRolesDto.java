@@ -1,4 +1,4 @@
-package com.example.techwiz.dto;
+package com.example.techwiz.dto.Users;
 
 import java.util.List;
 

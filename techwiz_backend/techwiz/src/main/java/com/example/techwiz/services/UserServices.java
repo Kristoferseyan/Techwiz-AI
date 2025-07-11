@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.example.techwiz.dto.UserRolesDto;
+import com.example.techwiz.dto.Users.UserRolesDto;
 import com.example.techwiz.jparepository.RoleRepository;
 import com.example.techwiz.jparepository.UsersRepository;
 import com.example.techwiz.mapper.UserRoleMapper;
