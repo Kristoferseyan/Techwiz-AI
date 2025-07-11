@@ -1,0 +1,930 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:techwiz/utils/colors.dart';
+import 'package:techwiz/utils/theme_manager.dart';
+import 'package:techwiz/features/auth/presentation/cubits/auth_cubit.dart';
+import 'package:techwiz/features/auth/presentation/cubits/auth_state.dart';
+import '../cubits/dashboard_cubit.dart';
+import '../cubits/dashboard_state.dart';
+import '../../domain/entities/quick_action.dart';
+import '../../domain/entities/issue.dart';
+import '../../domain/entities/guide.dart';
+
+class DashboardPage extends StatefulWidget {
+  const DashboardPage({super.key});
+
+  @override
+  State<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends State<DashboardPage> {
+  final TextEditingController _searchController = TextEditingController();
+  String _selectedCategory = 'All';
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authState = context.read<AuthCubit>().state;
+      String? token;
+      if (authState is AuthSuccess) {
+        token = authState.session.token;
+      }
+      context.read<DashboardCubit>().loadDashboard(token: token);
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Scaffold(
+      backgroundColor: colorScheme.background,
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        backgroundColor: colorScheme.surface,
+        elevation: 0,
+        title: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: colorScheme.primary,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.computer, color: Colors.white, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'TechWiz',
+              style: TextStyle(
+                color: colorScheme.onSurface,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          const ThemeToggleButton(),
+          BlocBuilder<AuthCubit, AuthState>(
+            builder: (context, state) {
+              return IconButton(
+                icon: Icon(
+                  Icons.person_outline,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+                onPressed: () {
+                  if (state is AuthSuccess) {
+                    _showUserProfile(context, state.session.username);
+                  }
+                },
+              );
+            },
+          ),
+        ],
+      ),
+      body: BlocBuilder<DashboardCubit, DashboardState>(
+        builder: (context, state) {
+          if (state is DashboardLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is DashboardError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, size: 64, color: colorScheme.error),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    state.message,
+                    style: TextStyle(color: colorScheme.onSurfaceVariant),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      final authState = context.read<AuthCubit>().state;
+                      String? token;
+                      if (authState is AuthSuccess) {
+                        token = authState.session.token;
+                      }
+                      context.read<DashboardCubit>().loadDashboard(
+                        token: token,
+                      );
+                    },
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            );
+          } else if (state is DashboardLoaded) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildWelcomeSection(),
+                  const SizedBox(height: 24),
+                  _buildSearchBar(),
+                  const SizedBox(height: 32),
+                  _buildQuickActions(state.quickActions),
+                  const SizedBox(height: 32),
+                  _buildCategories(state.categories),
+                  const SizedBox(height: 32),
+                  _buildCommonIssues(state.commonIssues),
+                  const SizedBox(height: 32),
+                  _buildRecentGuides(state.recentGuides),
+                ],
+              ),
+            );
+          }
+
+          return const Center(child: CircularProgressIndicator());
+        },
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {},
+        backgroundColor: colorScheme.error,
+        foregroundColor: colorScheme.onError,
+        icon: const Icon(Icons.emergency),
+        label: const Text('Emergency Help'),
+      ),
+    );
+  }
+
+  Widget _buildWelcomeSection() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return BlocBuilder<AuthCubit, AuthState>(
+      builder: (context, state) {
+        String welcomeText = 'Welcome to TechWiz';
+        if (state is AuthSuccess) {
+          welcomeText = 'Welcome back, ${state.session.username}!';
+        }
+
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                colorScheme.primary.withOpacity(0.8),
+                colorScheme.primary.withOpacity(0.6),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      welcomeText,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Get instant help with your computer problems',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: colorScheme.onPrimary.withOpacity(0.9),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.support_agent, size: 48, color: colorScheme.onPrimary),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSearchBar() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.shadow.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: _searchController,
+        style: TextStyle(color: colorScheme.onSurface),
+        decoration: InputDecoration(
+          hintText: 'Search for computer issues...',
+          hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+          prefixIcon: Icon(Icons.search, color: colorScheme.primary),
+          suffixIcon: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: Icon(Icons.mic, color: colorScheme.onSurfaceVariant),
+                onPressed: () {},
+              ),
+              IconButton(
+                icon: Icon(Icons.clear, color: colorScheme.onSurfaceVariant),
+                onPressed: () {
+                  _searchController.clear();
+                },
+              ),
+            ],
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none,
+          ),
+          filled: true,
+          fillColor: colorScheme.surface,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 16,
+          ),
+        ),
+        onSubmitted: (query) {
+          if (query.trim().isNotEmpty) {
+            final authState = context.read<AuthCubit>().state;
+            String? token;
+            if (authState is AuthSuccess) {
+              token = authState.session.token;
+            }
+            context.read<DashboardCubit>().search(query, token: token);
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _buildQuickActions(List<QuickAction> quickActions) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    if (quickActions.isEmpty) {
+      quickActions = [
+        const QuickAction(
+          id: '1',
+          title: 'Slow PC',
+          subtitle: 'Speed up your computer',
+          iconName: 'speed',
+          colorCode: '#2196F3',
+          route: '/slow-pc',
+        ),
+        const QuickAction(
+          id: '2',
+          title: 'No Internet',
+          subtitle: 'Fix connection issues',
+          iconName: 'wifi_off',
+          colorCode: '#FF9800',
+          route: '/no-internet',
+        ),
+        const QuickAction(
+          id: '3',
+          title: 'No Sound',
+          subtitle: 'Audio troubleshooting',
+          iconName: 'volume_off',
+          colorCode: '#4CAF50',
+          route: '/no-sound',
+        ),
+        const QuickAction(
+          id: '4',
+          title: 'Won\'t Start',
+          subtitle: 'Boot problems',
+          iconName: 'power_off',
+          colorCode: '#F44336',
+          route: '/wont-start',
+        ),
+      ];
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Quick Fixes',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 16),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: 1.2,
+          ),
+          itemCount: quickActions.length,
+          itemBuilder: (context, index) {
+            final action = quickActions[index];
+            return _buildQuickActionCard(action);
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickActionCard(QuickAction action) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    Color actionColor = _parseColor(action.colorCode);
+    IconData actionIcon = _parseIcon(action.iconName);
+
+    return GestureDetector(
+      onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Opening ${action.title} help...')),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: colorScheme.shadow.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: actionColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(actionIcon, color: actionColor, size: 24),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              action.title,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              action.subtitle,
+              style: TextStyle(
+                fontSize: 12,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategories(List<String> categories) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    if (categories.isEmpty) {
+      categories = [
+        'All',
+        'Hardware',
+        'Software',
+        'Network',
+        'Security',
+        'Performance',
+      ];
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Browse by Category',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          height: 40,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: categories.length,
+            itemBuilder: (context, index) {
+              final category = categories[index];
+              final isSelected = category == _selectedCategory;
+
+              return Container(
+                margin: const EdgeInsets.only(right: 12),
+                child: FilterChip(
+                  label: Text(category),
+                  selected: isSelected,
+                  onSelected: (selected) {
+                    setState(() {
+                      _selectedCategory = category;
+                    });
+                    final authState = context.read<AuthCubit>().state;
+                    if (authState is AuthSuccess) {
+                      context.read<DashboardCubit>().loadIssuesByCategory(
+                        category,
+                        token: authState.session.token,
+                      );
+                    }
+                  },
+                  backgroundColor: colorScheme.surface,
+                  selectedColor: colorScheme.primary.withOpacity(0.1),
+                  labelStyle: TextStyle(
+                    color: isSelected
+                        ? colorScheme.primary
+                        : colorScheme.onSurfaceVariant,
+                    fontWeight: isSelected
+                        ? FontWeight.w600
+                        : FontWeight.normal,
+                  ),
+                  side: BorderSide(
+                    color: isSelected
+                        ? colorScheme.primary
+                        : colorScheme.outline,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCommonIssues(List<Issue> issues) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    if (issues.isEmpty) {
+      issues = [
+        Issue(
+          id: '1',
+          title: 'Computer Running Slow',
+          description: 'Step-by-step guide to speed up your PC',
+          difficulty: 'Easy',
+          estimatedTime: '10 min',
+          rating: 4.8,
+          category: 'Performance',
+          createdAt: DateTime.now(),
+        ),
+        Issue(
+          id: '2',
+          title: 'Blue Screen of Death (BSOD)',
+          description: 'Diagnose and fix critical system errors',
+          difficulty: 'Medium',
+          estimatedTime: '20 min',
+          rating: 4.6,
+          category: 'Software',
+          createdAt: DateTime.now(),
+        ),
+        Issue(
+          id: '3',
+          title: 'WiFi Connection Problems',
+          description: 'Resolve internet connectivity issues',
+          difficulty: 'Easy',
+          estimatedTime: '5 min',
+          rating: 4.9,
+          category: 'Network',
+          createdAt: DateTime.now(),
+        ),
+      ];
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Common Issues',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface,
+              ),
+            ),
+            TextButton(
+              onPressed: () {},
+              child: Text(
+                'See All',
+                style: TextStyle(
+                  color: colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: issues.length,
+          itemBuilder: (context, index) {
+            final issue = issues[index];
+            return _buildIssueCard(issue);
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildIssueCard(Issue issue) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    Color difficultyColor;
+    switch (issue.difficulty.toLowerCase()) {
+      case 'easy':
+        difficultyColor = AppColors.success;
+        break;
+      case 'medium':
+        difficultyColor = AppColors.warning;
+        break;
+      case 'hard':
+        difficultyColor = AppColors.error;
+        break;
+      default:
+        difficultyColor = AppColors.info;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.shadow.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: InkWell(
+        onTap: () {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Opening ${issue.title}...')));
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      issue.title,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: difficultyColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      issue.difficulty,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: difficultyColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                issue.description,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Icon(
+                    Icons.access_time,
+                    size: 16,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    issue.estimatedTime,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Icon(Icons.star, size: 16, color: AppColors.warning),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${issue.rating}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const Spacer(),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecentGuides(List<Guide> guides) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    if (guides.isEmpty) {
+      guides = [
+        Guide(
+          id: '1',
+          title: 'Fix Overheating Laptop',
+          iconName: 'laptop_mac',
+          duration: '15 min',
+          category: 'Hardware',
+          createdAt: DateTime.now(),
+        ),
+        Guide(
+          id: '2',
+          title: 'Update Windows Drivers',
+          iconName: 'system_update',
+          duration: '8 min',
+          category: 'Software',
+          createdAt: DateTime.now(),
+        ),
+        Guide(
+          id: '3',
+          title: 'Clean Temporary Files',
+          iconName: 'cleaning_services',
+          duration: '5 min',
+          category: 'Performance',
+          createdAt: DateTime.now(),
+        ),
+      ];
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Recently Added Guides',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          height: 200,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: guides.length,
+            itemBuilder: (context, index) {
+              return _buildRecentGuideCard(guides[index]);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRecentGuideCard(Guide guide) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    IconData guideIcon = _parseIcon(guide.iconName);
+
+    return Container(
+      width: 160,
+      margin: const EdgeInsets.only(right: 16),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.shadow.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: InkWell(
+        onTap: () {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Opening ${guide.title}...')));
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(guideIcon, color: colorScheme.primary, size: 24),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                guide.title,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const Spacer(),
+              Text(
+                guide.duration,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showUserProfile(BuildContext context, String username) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        final colorScheme = Theme.of(context).colorScheme;
+        return Container(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircleAvatar(
+                radius: 40,
+                backgroundColor: colorScheme.primary,
+                child: Text(
+                  username.isNotEmpty ? username[0].toUpperCase() : 'U',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onPrimary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                username,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 24),
+              ListTile(
+                leading: Icon(Icons.settings, color: colorScheme.primary),
+                title: const Text('Settings'),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.help_outline, color: colorScheme.primary),
+                title: const Text('Help & Support'),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.logout, color: colorScheme.error),
+                title: const Text('Logout'),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.read<AuthCubit>().logout();
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    '/',
+                    (route) => false,
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Color _parseColor(String colorCode) {
+    try {
+      return Color(int.parse(colorCode.replaceFirst('#', '0xFF')));
+    } catch (e) {
+      return AppColors.info;
+    }
+  }
+
+  IconData _parseIcon(String iconName) {
+    switch (iconName.toLowerCase()) {
+      case 'speed':
+        return Icons.speed;
+      case 'wifi_off':
+        return Icons.wifi_off;
+      case 'volume_off':
+        return Icons.volume_off;
+      case 'power_off':
+        return Icons.power_off;
+      case 'laptop_mac':
+        return Icons.laptop_mac;
+      case 'system_update':
+        return Icons.system_update;
+      case 'cleaning_services':
+        return Icons.cleaning_services;
+      default:
+        return Icons.help_outline;
+    }
+  }
+}

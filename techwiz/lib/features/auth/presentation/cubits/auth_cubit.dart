@@ -45,4 +45,8 @@ class AuthCubit extends Cubit<AuthState> {
       emit(AuthFailure(e.toString()));
     }
   }
+
+  void logout() {
+    emit(AuthInitial());
+  }
 }

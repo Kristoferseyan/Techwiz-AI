@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -13,24 +11,53 @@ import 'package:techwiz/features/auth/presentation/cubits/auth_cubit.dart';
 import 'package:techwiz/features/auth/presentation/cubits/auth_state.dart';
 import 'package:techwiz/features/auth/presentation/screens/login_page.dart';
 import 'package:techwiz/features/auth/presentation/screens/register_page.dart';
-import 'package:techwiz/screens/home.dart';
+import 'package:techwiz/features/dashboard/data/dashboard_api_service.dart';
+import 'package:techwiz/features/dashboard/data/dashboard_repository_impl.dart';
+import 'package:techwiz/features/dashboard/domain/usecases/get_quick_actions.dart';
+import 'package:techwiz/features/dashboard/domain/usecases/get_common_issues.dart';
+import 'package:techwiz/features/dashboard/domain/usecases/get_recent_guides.dart';
+import 'package:techwiz/features/dashboard/domain/usecases/get_categories.dart';
+import 'package:techwiz/features/dashboard/domain/usecases/search_issues.dart';
+import 'package:techwiz/features/dashboard/presentation/cubits/dashboard_cubit.dart';
+import 'package:techwiz/features/dashboard/presentation/cubits/dashboard_state.dart';
+import 'package:techwiz/features/dashboard/presentation/screens/dashboard_page.dart';
 import 'package:techwiz/utils/colors.dart';
 import 'package:techwiz/utils/theme_manager.dart';
 
 Future<void> main() async {
   await dotenv.load();
   final httpClient = http.Client();
-  final apiService = AuthApiService(httpClient);
-  final authRepository = AuthRepositoryImpl(apiService);
+
+  // Auth setup
+  final authApiService = AuthApiService(httpClient);
+  final authRepository = AuthRepositoryImpl(authApiService);
+
+  // Dashboard setup
+  final dashboardApiService = DashboardApiService(httpClient);
+  final dashboardRepository = DashboardRepositoryImpl(dashboardApiService);
 
   runApp(
-    BlocProvider(
-      create: (_) => AuthCubit(
-        AuthInitial(),
-        loginUser: LoginUser(authRepository),
-        registerUser: RegisterUser(authRepository),
-      ),
-      child: MainApp(),
+    MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => AuthCubit(
+            AuthInitial(),
+            loginUser: LoginUser(authRepository),
+            registerUser: RegisterUser(authRepository),
+          ),
+        ),
+        BlocProvider(
+          create: (_) => DashboardCubit(
+            DashboardInitial(),
+            getQuickActions: GetQuickActions(dashboardRepository),
+            getCommonIssues: GetCommonIssues(dashboardRepository),
+            getRecentGuides: GetRecentGuides(dashboardRepository),
+            getCategories: GetCategories(dashboardRepository),
+            searchIssues: SearchIssues(dashboardRepository),
+          ),
+        ),
+      ],
+      child: const MainApp(),
     ),
   );
 }
@@ -62,7 +89,7 @@ class MainApp extends StatelessWidget {
           routes: {
             '/': (context) => const LoginPage(),
             '/register': (context) => const RegisterPage(),
-            '/home': (context) => const HomePage(),
+            '/home': (context) => const DashboardPage(),
           },
         );
       },
