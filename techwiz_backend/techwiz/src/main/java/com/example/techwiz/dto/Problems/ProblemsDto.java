@@ -4,6 +4,7 @@ package com.example.techwiz.dto.Problems;
 public class ProblemsDto {
     private String name;
     private String description;
+    private boolean featured;
 
     public String getName() {
         return name;
@@ -19,5 +20,13 @@ public class ProblemsDto {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public boolean isFeatured() {
+        return featured;
+    }
+
+    public void setFeatured(boolean featured) {
+        this.featured = featured;
     }
 }
