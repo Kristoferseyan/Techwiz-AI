@@ -34,16 +34,20 @@ public class Problems {
     )
     private List<Solutions> solutions;
 
+    private boolean featured;
+
     public Problems() {
     }
 
-    public Problems(Categories categories, String description, Integer id, String name, List<Solutions> solutions) {
+    public Problems(Categories categories, String description, boolean featured, Integer id, String name, List<Solutions> solutions) {
         this.categories = categories;
         this.description = description;
+        this.featured = featured;
         this.id = id;
         this.name = name;
         this.solutions = solutions;
     }
+
 
     public Integer getId() {
         return id;
@@ -83,5 +87,13 @@ public class Problems {
 
     public void setSolutions(List<Solutions> solutions) {
         this.solutions = solutions;
+    }
+
+    public boolean isFeatured() {
+        return featured;
+    }
+
+    public void setFeatured(boolean featured) {
+        this.featured = featured;
     }
 }

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.techwiz.dto.Users.UserRolesDto;
-import com.example.techwiz.services.UserServices;
+import com.example.techwiz.services.User.UserServices;
 
 import jakarta.validation.Valid;
 

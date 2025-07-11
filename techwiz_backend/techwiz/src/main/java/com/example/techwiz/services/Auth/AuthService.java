@@ -1,4 +1,4 @@
-package com.example.techwiz.services;
+package com.example.techwiz.services.Auth;
 
 import java.util.List;
 import java.util.stream.Collectors;

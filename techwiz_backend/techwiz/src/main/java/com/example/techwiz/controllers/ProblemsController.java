@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.techwiz.services.ProblemServices;
+import com.example.techwiz.services.Problems.ProblemServices;
 
 
 
@@ -21,6 +21,12 @@ public class ProblemsController {
     @GetMapping
     public ResponseEntity<?> getProblems() {
         return ResponseEntity.ok(problemServices.displayProblems());
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'SUPERADMIN')")
+    @GetMapping("featured")
+    public ResponseEntity<?> getFeaturedProblems(){
+        return ResponseEntity.ok(problemServices.displayFeaturedProblems());
     }
     
 }

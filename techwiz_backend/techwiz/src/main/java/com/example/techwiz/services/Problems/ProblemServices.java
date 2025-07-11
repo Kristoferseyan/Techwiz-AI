@@ -1,4 +1,4 @@
-package com.example.techwiz.services;
+package com.example.techwiz.services.Problems;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.techwiz.dto.Problems.ProblemsDto;
 import com.example.techwiz.jparepository.ProblemRepository;
+import com.example.techwiz.mapper.FeaturedProblemMapper;
 import com.example.techwiz.mapper.ProblemMapper;
 import com.example.techwiz.model.Problems;
 
@@ -22,5 +23,12 @@ public class ProblemServices {
         return problems.stream()
                     .map(ProblemMapper::toDto)
                     .collect(Collectors.toList());
+    }
+
+    public List<ProblemsDto> displayFeaturedProblems(){
+        List<Problems> featuredProblems = problemRepository.findByFeaturedTrue();
+        return featuredProblems.stream()
+                        .map(FeaturedProblemMapper::toDto)
+                        .collect(Collectors.toList());
     }
 }

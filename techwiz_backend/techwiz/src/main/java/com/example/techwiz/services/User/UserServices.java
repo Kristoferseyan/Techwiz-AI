@@ -1,4 +1,4 @@
-package com.example.techwiz.services;
+package com.example.techwiz.services.User;
 
 import java.util.List;
 
