@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Theme manager for handling light/dark mode switching
 class ThemeManager extends ChangeNotifier {
   static final ThemeManager _instance = ThemeManager._internal();
   factory ThemeManager() => _instance;
@@ -11,7 +10,6 @@ class ThemeManager extends ChangeNotifier {
 
   bool get isDarkMode {
     if (_themeMode == ThemeMode.system) {
-      // Get system brightness
       return WidgetsBinding.instance.platformDispatcher.platformBrightness ==
           Brightness.dark;
     }
@@ -29,7 +27,6 @@ class ThemeManager extends ChangeNotifier {
     } else if (_themeMode == ThemeMode.dark) {
       _themeMode = ThemeMode.light;
     } else {
-      // If system mode, switch to opposite of current system setting
       final brightness =
           WidgetsBinding.instance.platformDispatcher.platformBrightness;
       _themeMode = brightness == Brightness.dark
@@ -40,7 +37,6 @@ class ThemeManager extends ChangeNotifier {
   }
 }
 
-/// Widget for theme mode toggle button
 class ThemeToggleButton extends StatelessWidget {
   const ThemeToggleButton({super.key});
 
@@ -68,7 +64,6 @@ class ThemeToggleButton extends StatelessWidget {
   }
 }
 
-/// Settings tile for theme selection
 class ThemeSettingsTile extends StatelessWidget {
   const ThemeSettingsTile({super.key});
 

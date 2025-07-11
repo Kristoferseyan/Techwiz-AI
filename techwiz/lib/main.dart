@@ -28,11 +28,9 @@ Future<void> main() async {
   await dotenv.load();
   final httpClient = http.Client();
 
-  // Auth setup
   final authApiService = AuthApiService(httpClient);
   final authRepository = AuthRepositoryImpl(authApiService);
 
-  // Dashboard setup
   final dashboardApiService = DashboardApiService(httpClient);
   final dashboardRepository = DashboardRepositoryImpl(dashboardApiService);
 
