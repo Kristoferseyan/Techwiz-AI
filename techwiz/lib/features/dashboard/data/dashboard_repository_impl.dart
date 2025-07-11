@@ -21,12 +21,12 @@ class DashboardRepositoryImpl implements DashboardRepository {
 
   @override
   Future<List<Guide>> getRecentGuides({String? token}) async {
-    return await apiService.getRecentGuides();
+    return await apiService.getRecentGuides(token: token);
   }
 
   @override
   Future<List<String>> getCategories({String? token}) async {
-    return await apiService.getCategories();
+    return await apiService.getCategories(token: token);
   }
 
   @override

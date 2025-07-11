@@ -27,9 +27,15 @@ class _DashboardPageState extends State<DashboardPage> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authState = context.read<AuthCubit>().state;
+      print('DashboardPage: AuthState type: ${authState.runtimeType}');
       String? token;
       if (authState is AuthSuccess) {
         token = authState.session.token;
+        print('DashboardPage: Extracted token: ${token.substring(0, 20)}...');
+      } else {
+        print(
+          'DashboardPage: AuthState is not AuthSuccess, token will be null',
+        );
       }
       context.read<DashboardCubit>().loadDashboard(token: token);
     });

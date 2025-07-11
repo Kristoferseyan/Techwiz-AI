@@ -26,6 +26,9 @@ class DashboardCubit extends Cubit<DashboardState> {
   }) : super(initialState);
 
   Future<void> loadDashboard({String? token}) async {
+    print(
+      'DashboardCubit.loadDashboard called with token: ${token != null ? "Present (${token.substring(0, 20)}...)" : "None"}',
+    );
     emit(DashboardLoading());
 
     try {

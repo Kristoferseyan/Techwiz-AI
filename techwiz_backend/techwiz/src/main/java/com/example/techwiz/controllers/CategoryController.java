@@ -17,7 +17,7 @@ public class CategoryController {
 
     @PreAuthorize("hasAnyRole('SUPERADMIN', 'ADMIN', 'USER')")
     @GetMapping()
-    public ResponseEntity getCategories() {
+    public ResponseEntity<?> getCategories() {
         return ResponseEntity.ok(categoryServices.displayCategories());
     }
     

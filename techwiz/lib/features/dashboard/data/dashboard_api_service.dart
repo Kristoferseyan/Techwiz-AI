@@ -78,10 +78,34 @@ class DashboardApiService {
 
   Future<List<String>> getCategories({String? token}) async {
     try {
-      return ['All', 'General', 'Hardware', 'Software', 'Network', 'Security'];
+      print('Fetching categories from: $baseUrl/category');
+      print('Using token: ${token != null ? "Present" : "None"}');
+
+      final response = await httpClient.get(
+        Uri.parse('$baseUrl/category'),
+        headers: _getHeaders(token),
+      );
+
+      print('Categories response status: ${response.statusCode}');
+      print('Categories response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonList = json.decode(response.body);
+        final categories = jsonList.map<String>((category) {
+          return category['name'] as String;
+        }).toList();
+
+        print('Parsed categories: $categories');
+        return ['All', ...categories];
+      } else {
+        print('Failed to load categories: ${response.statusCode}');
+        print('Response body: ${response.body}');
+        throw Exception('Failed to load categories: ${response.statusCode}');
+      }
     } catch (e) {
       print('Error fetching categories: $e');
-      throw Exception('Failed to load categories: $e');
+      // Fallback to static categories if API fails
+      return ['All', 'General', 'Hardware', 'Software', 'Network', 'Security'];
     }
   }
 
@@ -116,26 +140,41 @@ class DashboardApiService {
     String? token,
   }) async {
     try {
+      if (category == 'All') {
+        final response = await httpClient.get(
+          Uri.parse('$baseUrl/problems'),
+          headers: _getHeaders(token),
+        );
+
+        if (response.statusCode == 200) {
+          final List<dynamic> data = json.decode(response.body);
+          return data.map((json) => _issueFromProblemsDto(json)).toList();
+        } else {
+          throw Exception('Failed to load all issues: ${response.statusCode}');
+        }
+      }
+
       final response = await httpClient.get(
-        Uri.parse('$baseUrl/problems'),
+        Uri.parse('$baseUrl/category'),
         headers: _getHeaders(token),
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        final allIssues = data
-            .map((json) => _issueFromProblemsDto(json))
-            .toList();
+        final List<dynamic> categories = json.decode(response.body);
 
-        if (category == 'All') {
-          return allIssues;
-        }
-
-        return allIssues;
-      } else {
-        throw Exception(
-          'Failed to load issues by category: ${response.statusCode}',
+        final categoryData = categories.firstWhere(
+          (cat) => cat['name'] == category,
+          orElse: () => null,
         );
+
+        if (categoryData != null && categoryData['problems'] != null) {
+          final List<dynamic> problems = categoryData['problems'];
+          return problems.map((json) => _issueFromProblemsDto(json)).toList();
+        } else {
+          return [];
+        }
+      } else {
+        throw Exception('Failed to load category: ${response.statusCode}');
       }
     } catch (e) {
       print('Error fetching issues by category: $e');
