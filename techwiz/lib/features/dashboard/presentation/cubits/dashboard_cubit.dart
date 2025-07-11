@@ -7,6 +7,7 @@ import '../../domain/usecases/get_common_issues.dart';
 import '../../domain/usecases/get_recent_guides.dart';
 import '../../domain/usecases/get_categories.dart';
 import '../../domain/usecases/search_issues.dart';
+import '../../domain/usecases/get_issues_by_category.dart';
 import 'dashboard_state.dart';
 
 class DashboardCubit extends Cubit<DashboardState> {
@@ -15,6 +16,7 @@ class DashboardCubit extends Cubit<DashboardState> {
   final GetRecentGuides getRecentGuides;
   final GetCategories getCategories;
   final SearchIssues searchIssues;
+  final GetIssuesByCategory getIssuesByCategory;
 
   DashboardCubit(
     DashboardState initialState, {
@@ -23,12 +25,10 @@ class DashboardCubit extends Cubit<DashboardState> {
     required this.getRecentGuides,
     required this.getCategories,
     required this.searchIssues,
+    required this.getIssuesByCategory,
   }) : super(initialState);
 
   Future<void> loadDashboard({String? token}) async {
-    print(
-      'DashboardCubit.loadDashboard called with token: ${token != null ? "Present (${token.substring(0, 20)}...)" : "None"}',
-    );
     emit(DashboardLoading());
 
     try {
@@ -52,42 +52,31 @@ class DashboardCubit extends Cubit<DashboardState> {
     }
   }
 
-  Future<void> search(String query, {String? token}) async {
-    if (query.trim().isEmpty) {
-      return;
-    }
-
-    emit(DashboardSearchLoading());
-
-    try {
-      final results = await searchIssues(query, token: token);
-      emit(DashboardSearchLoaded(searchResults: results, query: query));
-    } catch (e) {
-      emit(DashboardError('Search failed: ${e.toString()}'));
-    }
-  }
-
   Future<void> loadIssuesByCategory(String category, {String? token}) async {
     emit(DashboardCategoryLoading());
 
     try {
-      final issues = await getCommonIssues(token: token);
-      final filteredIssues = category == 'All'
-          ? issues
-          : issues.where((issue) => issue.category == category).toList();
+      final issues = await getIssuesByCategory(category, token: token);
 
+      emit(DashboardCategoryLoaded(categoryIssues: issues, category: category));
+    } catch (e) {
       emit(
-        DashboardCategoryLoaded(
-          categoryIssues: filteredIssues,
-          category: category,
+        DashboardError(
+          'Failed to load issues for category "$category": ${e.toString()}',
         ),
       );
-    } catch (e) {
-      emit(DashboardError('Failed to load category issues: ${e.toString()}'));
     }
   }
 
-  void resetToInitial() {
-    emit(DashboardInitial());
+  Future<void> search(String query, {String? token}) async {
+    emit(DashboardLoading());
+
+    try {
+      final issues = await searchIssues(query, token: token);
+
+      emit(DashboardSearchLoaded(searchResults: issues, query: query));
+    } catch (e) {
+      emit(DashboardError('Failed to search issues: ${e.toString()}'));
+    }
   }
 }

@@ -27,15 +27,9 @@ class _DashboardPageState extends State<DashboardPage> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authState = context.read<AuthCubit>().state;
-      print('DashboardPage: AuthState type: ${authState.runtimeType}');
       String? token;
       if (authState is AuthSuccess) {
         token = authState.session.token;
-        print('DashboardPage: Extracted token: ${token.substring(0, 20)}...');
-      } else {
-        print(
-          'DashboardPage: AuthState is not AuthSuccess, token will be null',
-        );
       }
       context.read<DashboardCubit>().loadDashboard(token: token);
     });
@@ -101,7 +95,7 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
       body: BlocBuilder<DashboardCubit, DashboardState>(
         builder: (context, state) {
-          if (state is DashboardLoading) {
+          if (state is DashboardLoading || state is DashboardCategoryLoading) {
             return const Center(child: CircularProgressIndicator());
           } else if (state is DashboardError) {
             return Center(
@@ -138,6 +132,31 @@ class _DashboardPageState extends State<DashboardPage> {
                     },
                     child: const Text('Retry'),
                   ),
+                ],
+              ),
+            );
+          } else if (state is DashboardCategoryLoaded) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildWelcomeSection(),
+                  const SizedBox(height: 24),
+                  _buildSearchBar(),
+                  const SizedBox(height: 32),
+                  _buildBackToDashboard(),
+                  const SizedBox(height: 16),
+                  Text(
+                    '${state.category} Issues',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildCategoryIssues(state.categoryIssues),
                 ],
               ),
             );
@@ -932,5 +951,169 @@ class _DashboardPageState extends State<DashboardPage> {
       default:
         return Icons.help_outline;
     }
+  }
+
+  Widget _buildBackToDashboard() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return ElevatedButton.icon(
+      onPressed: () {
+        final authState = context.read<AuthCubit>().state;
+        String? token;
+        if (authState is AuthSuccess) {
+          token = authState.session.token;
+        }
+        context.read<DashboardCubit>().loadDashboard(token: token);
+      },
+      icon: const Icon(Icons.arrow_back),
+      label: const Text('Back to Dashboard'),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
+      ),
+    );
+  }
+
+  Widget _buildCategoryIssues(List<Issue> issues) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    if (issues.isEmpty) {
+      return Center(
+        child: Column(
+          children: [
+            Icon(
+              Icons.search_off,
+              size: 64,
+              color: colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No issues found in this category',
+              style: TextStyle(
+                fontSize: 18,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: issues.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 16),
+      itemBuilder: (context, index) {
+        final issue = issues[index];
+        return Container(
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: colorScheme.shadow.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        issue.title,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  issue.description,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: colorScheme.onSurfaceVariant,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        issue.difficulty,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: colorScheme.onPrimaryContainer,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Icon(
+                      Icons.access_time,
+                      size: 16,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      issue.estimatedTime,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const Spacer(),
+                    Row(
+                      children: [
+                        Icon(Icons.star, size: 16, color: Colors.amber),
+                        const SizedBox(width: 4),
+                        Text(
+                          issue.rating.toString(),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: colorScheme.onSurfaceVariant,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 }
