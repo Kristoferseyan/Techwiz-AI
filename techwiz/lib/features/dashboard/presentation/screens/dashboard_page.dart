@@ -19,7 +19,6 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   final TextEditingController _searchController = TextEditingController();
-  String _selectedCategory = 'All';
 
   @override
   void initState() {
@@ -135,31 +134,6 @@ class _DashboardPageState extends State<DashboardPage> {
                 ],
               ),
             );
-          } else if (state is DashboardCategoryLoaded) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildWelcomeSection(),
-                  const SizedBox(height: 24),
-                  _buildSearchBar(),
-                  const SizedBox(height: 32),
-                  _buildBackToDashboard(),
-                  const SizedBox(height: 16),
-                  Text(
-                    '${state.category} Issues',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildCategoryIssues(state.categoryIssues),
-                ],
-              ),
-            );
           } else if (state is DashboardLoaded) {
             return SingleChildScrollView(
               padding: const EdgeInsets.all(20),
@@ -173,8 +147,6 @@ class _DashboardPageState extends State<DashboardPage> {
                   _buildQuickActions(state.quickActions),
                   const SizedBox(height: 32),
                   _buildCategories(state.categories),
-                  const SizedBox(height: 32),
-                  _buildCommonIssues(state.commonIssues),
                   const SizedBox(height: 32),
                   _buildRecentGuides(state.recentGuides),
                 ],
@@ -455,13 +427,15 @@ class _DashboardPageState extends State<DashboardPage> {
     if (categories.isEmpty) {
       categories = [
         'All',
-        'Hardware',
-        'Software',
-        'Network',
+        'Hardware Issues',
+        'Software Problems',
+        'Network Issues',
         'Security',
         'Performance',
       ];
     }
+
+    final filteredCategories = categories.where((cat) => cat != 'All').toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -475,257 +449,26 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
         ),
         const SizedBox(height: 16),
-        SizedBox(
-          height: 40,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: categories.length,
-            itemBuilder: (context, index) {
-              final category = categories[index];
-              final isSelected = category == _selectedCategory;
 
-              return Container(
-                margin: const EdgeInsets.only(right: 12),
-                child: FilterChip(
-                  label: Text(category),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    setState(() {
-                      _selectedCategory = category;
-                    });
-                    final authState = context.read<AuthCubit>().state;
-                    if (authState is AuthSuccess) {
-                      context.read<DashboardCubit>().loadIssuesByCategory(
-                        category,
-                        token: authState.session.token,
-                      );
-                    }
-                  },
-                  backgroundColor: colorScheme.surface,
-                  selectedColor: colorScheme.primary.withOpacity(0.1),
-                  labelStyle: TextStyle(
-                    color: isSelected
-                        ? colorScheme.primary
-                        : colorScheme.onSurfaceVariant,
-                    fontWeight: isSelected
-                        ? FontWeight.w600
-                        : FontWeight.normal,
-                  ),
-                  side: BorderSide(
-                    color: isSelected
-                        ? colorScheme.primary
-                        : colorScheme.outline,
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCommonIssues(List<Issue> issues) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    if (issues.isEmpty) {
-      issues = [
-        Issue(
-          id: '1',
-          title: 'Computer Running Slow',
-          description: 'Step-by-step guide to speed up your PC',
-          difficulty: 'Easy',
-          estimatedTime: '10 min',
-          rating: 4.8,
-          category: 'Performance',
-          createdAt: DateTime.now(),
-        ),
-        Issue(
-          id: '2',
-          title: 'Blue Screen of Death (BSOD)',
-          description: 'Diagnose and fix critical system errors',
-          difficulty: 'Medium',
-          estimatedTime: '20 min',
-          rating: 4.6,
-          category: 'Software',
-          createdAt: DateTime.now(),
-        ),
-        Issue(
-          id: '3',
-          title: 'WiFi Connection Problems',
-          description: 'Resolve internet connectivity issues',
-          difficulty: 'Easy',
-          estimatedTime: '5 min',
-          rating: 4.9,
-          category: 'Network',
-          createdAt: DateTime.now(),
-        ),
-      ];
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Common Issues',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: colorScheme.onSurface,
-              ),
-            ),
-            TextButton(
-              onPressed: () {},
-              child: Text(
-                'See All',
-                style: TextStyle(
-                  color: colorScheme.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
+        _buildViewAllCard(),
         const SizedBox(height: 16),
-        ListView.builder(
+
+        GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          itemCount: issues.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 1.3,
+          ),
+          itemCount: filteredCategories.length,
           itemBuilder: (context, index) {
-            final issue = issues[index];
-            return _buildIssueCard(issue);
+            final category = filteredCategories[index];
+            return _buildCategoryCard(category, index);
           },
         ),
       ],
-    );
-  }
-
-  Widget _buildIssueCard(Issue issue) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    Color difficultyColor;
-    switch (issue.difficulty.toLowerCase()) {
-      case 'easy':
-        difficultyColor = AppColors.success;
-        break;
-      case 'medium':
-        difficultyColor = AppColors.warning;
-        break;
-      case 'hard':
-        difficultyColor = AppColors.error;
-        break;
-      default:
-        difficultyColor = AppColors.info;
-    }
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: InkWell(
-        onTap: () {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Opening ${issue.title}...')));
-        },
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      issue.title,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: difficultyColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      issue.difficulty,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: difficultyColor,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                issue.description,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Icon(
-                    Icons.access_time,
-                    size: 16,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    issue.estimatedTime,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Icon(Icons.star, size: 16, color: AppColors.warning),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${issue.rating}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const Spacer(),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    size: 16,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 
@@ -932,6 +675,457 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
+  Widget _buildViewAllCard() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      width: double.infinity,
+      height: 60,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [colorScheme.primary, colorScheme.primary.withOpacity(0.8)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.primary.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () {
+            _showAllProblemsBottomSheet();
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    Icons.view_module,
+                    color: colorScheme.onPrimary,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    'View All Problems',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: colorScheme.onPrimary,
+                    ),
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios,
+                  color: colorScheme.onPrimary,
+                  size: 16,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryCard(String category, int index) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final categoryData = _getCategoryData(category, index);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: colorScheme.outline.withOpacity(0.1),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.shadow.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () {
+            _showCategoryBottomSheet(category);
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: categoryData['color'].withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    categoryData['icon'],
+                    color: categoryData['color'],
+                    size: 24,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  category,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'View issues',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Map<String, dynamic> _getCategoryData(String category, int index) {
+    final categoryMap = {
+      'Hardware Issues': {
+        'icon': Icons.memory,
+        'color': const Color(0xFF2196F3),
+      },
+      'Software Problems': {
+        'icon': Icons.apps,
+        'color': const Color(0xFF4CAF50),
+      },
+      'Network Issues': {'icon': Icons.wifi, 'color': const Color(0xFFFF9800)},
+      'Security': {'icon': Icons.security, 'color': const Color(0xFFF44336)},
+      'Performance': {'icon': Icons.speed, 'color': const Color(0xFF9C27B0)},
+    };
+
+    return categoryMap[category] ??
+        {'icon': Icons.help_outline, 'color': const Color(0xFF607D8B)};
+  }
+
+  void _showAllProblemsBottomSheet() {
+    final authState = context.read<AuthCubit>().state;
+    String? token;
+    if (authState is AuthSuccess) {
+      token = authState.session.token;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.8,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (context, scrollController) {
+          return _buildProblemsBottomSheet(
+            'All Problems',
+            'All',
+            token,
+            scrollController,
+          );
+        },
+      ),
+    );
+  }
+
+  void _showCategoryBottomSheet(String category) {
+    final authState = context.read<AuthCubit>().state;
+    String? token;
+    if (authState is AuthSuccess) {
+      token = authState.session.token;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.8,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (context, scrollController) {
+          return _buildProblemsBottomSheet(
+            '$category Issues',
+            category,
+            token,
+            scrollController,
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildProblemsBottomSheet(
+    String title,
+    String category,
+    String? token,
+    ScrollController scrollController,
+  ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 40,
+            height: 4,
+            margin: const EdgeInsets.only(top: 12),
+            decoration: BoxDecoration(
+              color: colorScheme.onSurfaceVariant.withOpacity(0.4),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+                const Spacer(),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: Icon(Icons.close, color: colorScheme.onSurfaceVariant),
+                ),
+              ],
+            ),
+          ),
+
+          Expanded(
+            child: FutureBuilder<List<Issue>>(
+              future: _fetchCategoryIssues(category, token),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 48,
+                          color: colorScheme.error,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Error loading issues',
+                          style: TextStyle(color: colorScheme.onSurfaceVariant),
+                        ),
+                      ],
+                    ),
+                  );
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.search_off,
+                          size: 48,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No issues found',
+                          style: TextStyle(color: colorScheme.onSurfaceVariant),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                final issues = snapshot.data!;
+                return ListView.separated(
+                  controller: scrollController,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: issues.length,
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 12),
+                  itemBuilder: (context, index) {
+                    return _buildBottomSheetIssueCard(issues[index]);
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomSheetIssueCard(Issue issue) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: colorScheme.background,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: colorScheme.outline.withOpacity(0.1),
+          width: 1,
+        ),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Opening ${issue.title}...')));
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      issue.title,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      issue.difficulty,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onPrimaryContainer,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                issue.description,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: colorScheme.onSurfaceVariant,
+                  height: 1.4,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Icon(
+                    Icons.access_time,
+                    size: 16,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    issue.estimatedTime,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Icon(Icons.star, size: 16, color: Colors.amber),
+                  const SizedBox(width: 4),
+                  Text(
+                    issue.rating.toString(),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const Spacer(),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    size: 14,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<List<Issue>> _fetchCategoryIssues(
+    String category,
+    String? token,
+  ) async {
+    try {
+      final cubit = context.read<DashboardCubit>();
+      if (category == 'All') {
+        return await cubit.getCommonIssuesData(token: token);
+      } else {
+        return await cubit.getIssuesByCategoryData(category, token: token);
+      }
+    } catch (e) {
+      throw Exception('Failed to fetch issues: $e');
+    }
+  }
+
   IconData _parseIcon(String iconName) {
     switch (iconName.toLowerCase()) {
       case 'speed':
@@ -951,169 +1145,5 @@ class _DashboardPageState extends State<DashboardPage> {
       default:
         return Icons.help_outline;
     }
-  }
-
-  Widget _buildBackToDashboard() {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return ElevatedButton.icon(
-      onPressed: () {
-        final authState = context.read<AuthCubit>().state;
-        String? token;
-        if (authState is AuthSuccess) {
-          token = authState.session.token;
-        }
-        context.read<DashboardCubit>().loadDashboard(token: token);
-      },
-      icon: const Icon(Icons.arrow_back),
-      label: const Text('Back to Dashboard'),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: colorScheme.primary,
-        foregroundColor: colorScheme.onPrimary,
-      ),
-    );
-  }
-
-  Widget _buildCategoryIssues(List<Issue> issues) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    if (issues.isEmpty) {
-      return Center(
-        child: Column(
-          children: [
-            Icon(
-              Icons.search_off,
-              size: 64,
-              color: colorScheme.onSurfaceVariant,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'No issues found in this category',
-              style: TextStyle(
-                fontSize: 18,
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: issues.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 16),
-      itemBuilder: (context, index) {
-        final issue = issues[index];
-        return Container(
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: colorScheme.shadow.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: colorScheme.primary,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        issue.title,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  issue.description,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: colorScheme.onSurfaceVariant,
-                    height: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        issue.difficulty,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: colorScheme.onPrimaryContainer,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Icon(
-                      Icons.access_time,
-                      size: 16,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      issue.estimatedTime,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const Spacer(),
-                    Row(
-                      children: [
-                        Icon(Icons.star, size: 16, color: Colors.amber),
-                        const SizedBox(width: 4),
-                        Text(
-                          issue.rating.toString(),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: colorScheme.onSurfaceVariant,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
   }
 }

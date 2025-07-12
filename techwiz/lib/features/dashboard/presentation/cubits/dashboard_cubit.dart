@@ -79,4 +79,15 @@ class DashboardCubit extends Cubit<DashboardState> {
       emit(DashboardError('Failed to search issues: ${e.toString()}'));
     }
   }
+
+  Future<List<Issue>> getCommonIssuesData({String? token}) async {
+    return await getCommonIssues(token: token);
+  }
+
+  Future<List<Issue>> getIssuesByCategoryData(
+    String category, {
+    String? token,
+  }) async {
+    return await getIssuesByCategory(category, token: token);
+  }
 }

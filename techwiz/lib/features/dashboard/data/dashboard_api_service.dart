@@ -22,15 +22,14 @@ class DashboardApiService {
   Future<List<QuickAction>> getQuickActions({String? token}) async {
     try {
       final response = await httpClient.get(
-        Uri.parse('$baseUrl/problems'),
+        Uri.parse('$baseUrl/problems/featured'),
         headers: _getHeaders(token),
       );
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
 
-        final limitedData = data.take(4).toList();
-        return limitedData.asMap().entries.map((entry) {
+        return data.asMap().entries.map((entry) {
           final index = entry.key;
           final json = entry.value;
           return _quickActionFromProblemsDto(json, index);

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:techwiz/widgets/button.dart';
 import 'package:techwiz/utils/colors.dart';
 import 'package:techwiz/utils/theme_manager.dart';
