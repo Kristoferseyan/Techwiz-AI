@@ -6,6 +6,7 @@ import com.example.techwiz.model.Solutions;
 public class SolutionMapper {
     public static SolutionsDto toDto(Solutions solutions){
         SolutionsDto dto = new SolutionsDto();
+        dto.setId(solutions.getId());
         dto.setTitle(solutions.getTitle());
         dto.setDescription(solutions.getDescription());
         return dto;

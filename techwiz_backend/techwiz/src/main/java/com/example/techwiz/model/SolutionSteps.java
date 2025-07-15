@@ -15,7 +15,7 @@ public class SolutionSteps {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Integer id;
     private Integer step_number;
-    private String instructions;
+    private String instruction;
     
     @ManyToOne
     @JoinColumn(name="solution_id", nullable=false)
@@ -24,9 +24,9 @@ public class SolutionSteps {
     public SolutionSteps() {
     }
 
-    public SolutionSteps(Integer id, String instructions, Solutions solutions, Integer step_number) {
+    public SolutionSteps(Integer id, String instruction, Solutions solutions, Integer step_number) {
         this.id = id;
-        this.instructions = instructions;
+        this.instruction = instruction;
         this.solutions = solutions;
         this.step_number = step_number;
     }
@@ -47,12 +47,12 @@ public class SolutionSteps {
         this.step_number = step_number;
     }
 
-    public String getInstructions() {
-        return instructions;
+    public String getinstruction() {
+        return instruction;
     }
 
-    public void setInstructions(String instructions) {
-        this.instructions = instructions;
+    public void setinstruction(String instruction) {
+        this.instruction = instruction;
     }
 
     public Solutions getSolutions() {
