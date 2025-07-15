@@ -81,7 +81,6 @@ class _SolutionsPageState extends State<SolutionsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Problem Header Card
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
@@ -158,7 +157,6 @@ class _SolutionsPageState extends State<SolutionsPage> {
             ),
             const SizedBox(height: 24),
 
-            // Solutions Section
             Text(
               'Solutions',
               style: TextStyle(
@@ -169,7 +167,6 @@ class _SolutionsPageState extends State<SolutionsPage> {
             ),
             const SizedBox(height: 16),
 
-            // Solutions List
             FutureBuilder<List<Solution>>(
               future: _solutionsFuture,
               builder: (context, snapshot) {
@@ -254,7 +251,6 @@ class _SolutionsPageState extends State<SolutionsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header with step number
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
@@ -304,7 +300,6 @@ class _SolutionsPageState extends State<SolutionsPage> {
             ),
           ),
 
-          // Content
           Padding(
             padding: const EdgeInsets.all(20),
             child: Text(

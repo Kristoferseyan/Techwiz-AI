@@ -53,7 +53,7 @@ class DashboardRepositoryImpl implements DashboardRepository {
 
   Issue _issueFromProblemsDto(Map<String, dynamic> json) {
     return Issue(
-      id: json['id']?.toString() ?? '0', // Now this will get the actual ID
+      id: json['id']?.toString() ?? '0',
       title: json['name'] ?? 'Unknown Problem',
       description: json['description'] ?? 'No description available',
       difficulty: 'Medium',
