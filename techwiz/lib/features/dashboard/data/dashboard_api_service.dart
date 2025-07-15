@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import '../domain/entities/quick_action.dart';
 import '../domain/entities/issue.dart';
 import '../domain/entities/guide.dart';
+import '../domain/entities/solution.dart';
 
 class DashboardApiService {
   final http.Client httpClient;
@@ -155,6 +156,27 @@ class DashboardApiService {
     }
   }
 
+  Future<List<Solution>> getSolutionsByProblemId(
+    int problemId, {
+    String? token,
+  }) async {
+    try {
+      final response = await httpClient.get(
+        Uri.parse('$baseUrl/solutions/getSolutionsByProblemId/$problemId'),
+        headers: _getHeaders(token),
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        return data.map((json) => _solutionFromDto(json)).toList();
+      } else {
+        throw Exception('Failed to load solutions: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Failed to load solutions: $e');
+    }
+  }
+
   QuickAction _quickActionFromProblemsDto(
     Map<String, dynamic> json,
     int index,
@@ -174,7 +196,9 @@ class DashboardApiService {
 
   Issue _issueFromProblemsDto(Map<String, dynamic> json) {
     return Issue(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id:
+          json['id']?.toString() ??
+          DateTime.now().millisecondsSinceEpoch.toString(),
       title: json['name'] ?? 'Unknown Problem',
       description: json['description'] ?? 'No description available',
       difficulty: 'Medium',
@@ -182,6 +206,13 @@ class DashboardApiService {
       rating: 4.0,
       category: 'General',
       createdAt: DateTime.now(),
+    );
+  }
+
+  Solution _solutionFromDto(Map<String, dynamic> json) {
+    return Solution(
+      title: json['title'] ?? 'Solution',
+      description: json['description'] ?? 'No description available',
     );
   }
 

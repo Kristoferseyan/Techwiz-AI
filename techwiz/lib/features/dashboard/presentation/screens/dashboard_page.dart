@@ -9,6 +9,7 @@ import '../cubits/dashboard_state.dart';
 import '../../domain/entities/quick_action.dart';
 import '../../domain/entities/issue.dart';
 import '../../domain/entities/guide.dart';
+import 'solutions_page.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -1011,9 +1012,12 @@ class _DashboardPageState extends State<DashboardPage> {
         borderRadius: BorderRadius.circular(12),
         onTap: () {
           Navigator.pop(context);
-          ScaffoldMessenger.of(
+          Navigator.push(
             context,
-          ).showSnackBar(SnackBar(content: Text('Opening ${issue.title}...')));
+            MaterialPageRoute(
+              builder: (context) => SolutionsPage(issue: issue),
+            ),
+          );
         },
         child: Padding(
           padding: const EdgeInsets.all(16),

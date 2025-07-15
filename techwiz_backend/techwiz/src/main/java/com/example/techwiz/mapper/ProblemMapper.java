@@ -13,6 +13,7 @@ public class ProblemMapper {
 
     public static ProblemsDto toDto(Problems problems){
         ProblemsDto dto = new ProblemsDto();
+        dto.setId(problems.getId());
         dto.setName(problems.getName());
         dto.setDescription(problems.getDescription());
         return dto;

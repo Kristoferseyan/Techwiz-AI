@@ -2,6 +2,7 @@ package com.example.techwiz.dto.Problems;
 
 
 public class ProblemsDto {
+    private Integer id;
     private String name;
     private String description;
     private boolean featured;
@@ -28,5 +29,13 @@ public class ProblemsDto {
 
     public void setFeatured(boolean featured) {
         this.featured = featured;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 }

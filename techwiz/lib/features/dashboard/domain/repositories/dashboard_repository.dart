@@ -1,6 +1,7 @@
 import '../entities/quick_action.dart';
 import '../entities/issue.dart';
 import '../entities/guide.dart';
+import '../entities/solution.dart';
 
 abstract class DashboardRepository {
   Future<List<QuickAction>> getQuickActions({String? token});
@@ -9,4 +10,8 @@ abstract class DashboardRepository {
   Future<List<String>> getCategories({String? token});
   Future<List<Issue>> searchIssues(String query, {String? token});
   Future<List<Issue>> getIssuesByCategory(String category, {String? token});
+  Future<List<Solution>> getSolutionsByProblemId(
+    int problemId, {
+    String? token,
+  });
 }

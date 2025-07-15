@@ -2,6 +2,7 @@ import '../domain/repositories/dashboard_repository.dart';
 import '../domain/entities/quick_action.dart';
 import '../domain/entities/issue.dart';
 import '../domain/entities/guide.dart';
+import '../domain/entities/solution.dart';
 import 'dashboard_api_service.dart';
 
 class DashboardRepositoryImpl implements DashboardRepository {
@@ -40,5 +41,13 @@ class DashboardRepositoryImpl implements DashboardRepository {
     String? token,
   }) async {
     return await apiService.getIssuesByCategory(category, token: token);
+  }
+
+  @override
+  Future<List<Solution>> getSolutionsByProblemId(
+    int problemId, {
+    String? token,
+  }) async {
+    return await apiService.getSolutionsByProblemId(problemId, token: token);
   }
 }
