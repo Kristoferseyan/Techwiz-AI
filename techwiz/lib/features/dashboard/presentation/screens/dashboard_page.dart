@@ -822,7 +822,48 @@ class _DashboardPageState extends State<DashboardPage> {
         'icon': Icons.apps,
         'color': const Color(0xFF4CAF50),
       },
+      'Internet & Network': {
+        'icon': Icons.wifi,
+        'color': const Color(0xFFFF9800),
+      },
       'Network Issues': {'icon': Icons.wifi, 'color': const Color(0xFFFF9800)},
+      'Operating System Errors': {
+        'icon': Icons.desktop_windows,
+        'color': const Color(0xFF9C27B0),
+      },
+      'Power & Battery': {
+        'icon': Icons.battery_alert,
+        'color': const Color(0xFFE91E63),
+      },
+      'Display & Graphics': {
+        'icon': Icons.monitor,
+        'color': const Color(0xFF00BCD4),
+      },
+      'Audio Problems': {
+        'icon': Icons.volume_off,
+        'color': const Color(0xFFFF5722),
+      },
+      'Peripheral Devices': {
+        'icon': Icons.mouse,
+        'color': const Color(0xFF795548),
+      },
+      'Storage & Disk Issues': {
+        'icon': Icons.storage,
+        'color': const Color(0xFF607D8B),
+      },
+      'Performance & Lag': {
+        'icon': Icons.speed,
+        'color': const Color(0xFF9C27B0),
+      },
+      'Boot & Startup Issues': {
+        'icon': Icons.power_settings_new,
+        'color': const Color(0xFFFF9800),
+      },
+      'Security & Antivirus': {
+        'icon': Icons.security,
+        'color': const Color(0xFFF44336),
+      },
+
       'Security': {'icon': Icons.security, 'color': const Color(0xFFF44336)},
       'Performance': {'icon': Icons.speed, 'color': const Color(0xFF9C27B0)},
     };
