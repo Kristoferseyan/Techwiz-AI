@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/solution.dart';
 import '../../domain/entities/solution_step.dart';
-import '../../domain/entities/issue.dart';
+import '../../../problems/domain/entities/issue.dart';
 import '../../../auth/presentation/cubits/auth_cubit.dart';
 import '../../../auth/presentation/cubits/auth_state.dart';
-import '../../data/dashboard_api_service.dart';
+import '../../data/solutions_api_service.dart';
 import 'package:http/http.dart' as http;
 
 class SolutionsPage extends StatefulWidget {
@@ -19,12 +19,12 @@ class SolutionsPage extends StatefulWidget {
 
 class _SolutionsPageState extends State<SolutionsPage> {
   late Future<List<Solution>> _solutionsFuture;
-  late DashboardApiService _apiService;
+  late SolutionsApiService _apiService;
 
   @override
   void initState() {
     super.initState();
-    _apiService = DashboardApiService(http.Client());
+    _apiService = SolutionsApiService(http.Client());
     _loadSolutions();
   }
 

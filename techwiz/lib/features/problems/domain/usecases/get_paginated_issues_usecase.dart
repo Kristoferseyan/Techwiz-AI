@@ -1,11 +1,11 @@
-import '../repositories/dashboard_repository.dart';
-import '../entities/paginated_response.dart';
+import '../repositories/problems_repository.dart';
 import '../entities/issue.dart';
+import '../entities/paginated_response.dart';
 
-class GetPaginatedIssues {
-  final DashboardRepository repository;
+class GetPaginatedIssuesUseCase {
+  final ProblemsRepository repository;
 
-  GetPaginatedIssues(this.repository);
+  GetPaginatedIssuesUseCase(this.repository);
 
   Future<PaginatedResponse<Issue>> call({
     String? token,

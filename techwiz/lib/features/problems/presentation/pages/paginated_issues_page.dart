@@ -6,7 +6,7 @@ import '../cubits/paginated_issues_cubit.dart';
 import '../cubits/paginated_issues_state.dart';
 import '../../../auth/presentation/cubits/auth_cubit.dart';
 import '../../../auth/presentation/cubits/auth_state.dart';
-import 'solutions_page.dart';
+import '../../../solutions/presentation/pages/solutions_page.dart';
 
 class PaginatedIssuesPage extends StatefulWidget {
   const PaginatedIssuesPage({super.key});

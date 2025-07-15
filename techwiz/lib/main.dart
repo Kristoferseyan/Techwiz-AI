@@ -13,15 +13,12 @@ import 'package:techwiz/features/auth/presentation/screens/login_page.dart';
 import 'package:techwiz/features/auth/presentation/screens/register_page.dart';
 import 'package:techwiz/features/dashboard/data/dashboard_api_service.dart';
 import 'package:techwiz/features/dashboard/data/dashboard_repository_impl.dart';
-import 'package:techwiz/features/dashboard/domain/usecases/get_quick_actions.dart';
-import 'package:techwiz/features/dashboard/domain/usecases/get_common_issues.dart';
-import 'package:techwiz/features/dashboard/domain/usecases/get_recent_guides.dart';
-import 'package:techwiz/features/dashboard/domain/usecases/get_categories.dart';
-import 'package:techwiz/features/dashboard/domain/usecases/search_issues.dart';
-import 'package:techwiz/features/dashboard/domain/usecases/get_paginated_issues.dart';
-import 'package:techwiz/features/dashboard/presentation/cubits/paginated_issues_cubit.dart';
-import 'package:techwiz/features/dashboard/presentation/cubits/paginated_issues_state.dart';
-import 'package:techwiz/features/dashboard/domain/usecases/get_issues_by_category.dart';
+import 'package:techwiz/features/problems/data/problems_api_service.dart';
+import 'package:techwiz/features/problems/data/repositories/problems_repository_impl.dart';
+import 'package:techwiz/features/dashboard/domain/usecases/get_quick_actions_usecase.dart';
+import 'package:techwiz/features/dashboard/domain/usecases/get_recent_guides_usecase.dart';
+import 'package:techwiz/features/problems/domain/usecases/get_paginated_issues_usecase.dart';
+import 'package:techwiz/features/problems/presentation/cubits/paginated_issues_cubit.dart';
 import 'package:techwiz/features/dashboard/presentation/cubits/dashboard_cubit.dart';
 import 'package:techwiz/features/dashboard/presentation/cubits/dashboard_state.dart';
 import 'package:techwiz/features/dashboard/presentation/screens/dashboard_page.dart';
@@ -38,6 +35,9 @@ Future<void> main() async {
   final dashboardApiService = DashboardApiService(httpClient);
   final dashboardRepository = DashboardRepositoryImpl(dashboardApiService);
 
+  final problemsApiService = ProblemsApiService(httpClient);
+  final problemsRepository = ProblemsRepositoryImpl(problemsApiService);
+
   runApp(
     MultiBlocProvider(
       providers: [
@@ -51,17 +51,15 @@ Future<void> main() async {
         BlocProvider(
           create: (_) => DashboardCubit(
             DashboardInitial(),
-            getQuickActions: GetQuickActions(dashboardRepository),
-            getCommonIssues: GetCommonIssues(dashboardRepository),
-            getRecentGuides: GetRecentGuides(dashboardRepository),
-            getCategories: GetCategories(dashboardRepository),
-            searchIssues: SearchIssues(dashboardRepository),
-            getIssuesByCategory: GetIssuesByCategory(dashboardRepository),
+            getQuickActionsUseCase: GetQuickActionsUseCase(dashboardRepository),
+            getRecentGuidesUseCase: GetRecentGuidesUseCase(dashboardRepository),
           ),
         ),
         BlocProvider(
           create: (_) => PaginatedIssuesCubit(
-            getPaginatedIssues: GetPaginatedIssues(dashboardRepository),
+            getPaginatedIssuesUseCase: GetPaginatedIssuesUseCase(
+              problemsRepository,
+            ),
           ),
         ),
       ],

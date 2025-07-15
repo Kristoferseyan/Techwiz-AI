@@ -5,9 +5,7 @@ import 'package:techwiz/features/auth/presentation/cubits/auth_cubit.dart';
 import 'package:techwiz/features/auth/presentation/cubits/auth_state.dart';
 import '../cubits/dashboard_cubit.dart';
 import '../cubits/dashboard_state.dart';
-import '../../domain/entities/issue.dart';
-import 'solutions_page.dart';
-import 'paginated_issues_page.dart';
+import '../../../problems/presentation/pages/paginated_issues_page.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -93,7 +91,7 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
       body: BlocBuilder<DashboardCubit, DashboardState>(
         builder: (context, state) {
-          if (state is DashboardLoading || state is DashboardCategoryLoading) {
+          if (state is DashboardLoading) {
             return const Center(child: CircularProgressIndicator());
           } else if (state is DashboardError) {
             return Center(
@@ -141,7 +139,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 children: [
                   _buildSearchBar(),
                   const SizedBox(height: 32),
-                  _buildCategories(state.categories),
+                  _buildCategories(),
                 ],
               ),
             );
@@ -211,34 +209,31 @@ class _DashboardPageState extends State<DashboardPage> {
         ),
         onSubmitted: (query) {
           if (query.trim().isNotEmpty) {
-            final authState = context.read<AuthCubit>().state;
-            String? token;
-            if (authState is AuthSuccess) {
-              token = authState.session.token;
-            }
-            context.read<DashboardCubit>().search(query, token: token);
+            // TODO: Implement search functionality with search feature
+            // Navigate to search results page or show search dialog
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Search functionality coming soon: "$query"'),
+              ),
+            );
           }
         },
       ),
     );
   }
 
-  Widget _buildCategories(List<String> categories) {
+  Widget _buildCategories() {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    if (categories.isEmpty) {
-      categories = [
-        'All',
-        'Hardware Issues',
-        'Software Problems',
-        'Network Issues',
-        'Security',
-        'Performance',
-      ];
-    }
-
-    final filteredCategories = categories.where((cat) => cat != 'All').toList();
+    // Static categories for now - these will be managed by the categories feature
+    final categories = [
+      'Hardware Issues',
+      'Software Problems',
+      'Network Issues',
+      'Security',
+      'Performance',
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -265,9 +260,9 @@ class _DashboardPageState extends State<DashboardPage> {
             mainAxisSpacing: 12,
             childAspectRatio: 1.3,
           ),
-          itemCount: filteredCategories.length,
+          itemCount: categories.length,
           itemBuilder: (context, index) {
-            final category = filteredCategories[index];
+            final category = categories[index];
             return _buildCategoryCard(category, index);
           },
         ),
@@ -551,238 +546,10 @@ class _DashboardPageState extends State<DashboardPage> {
         {'icon': Icons.help_outline, 'color': const Color(0xFF607D8B)};
   }
 
-  void _showAllProblemsBottomSheet() {
-    final authState = context.read<AuthCubit>().state;
-    String? token;
-    if (authState is AuthSuccess) {
-      token = authState.session.token;
-    }
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.8,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        builder: (context, scrollController) {
-          return _buildProblemsBottomSheet(
-            'All Problems',
-            'All',
-            token,
-            scrollController,
-          );
-        },
-      ),
-    );
-  }
-
   void _showCategoryBottomSheet(String category) {
-    final authState = context.read<AuthCubit>().state;
-    String? token;
-    if (authState is AuthSuccess) {
-      token = authState.session.token;
-    }
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.8,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        builder: (context, scrollController) {
-          return _buildProblemsBottomSheet(
-            '$category Issues',
-            category,
-            token,
-            scrollController,
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildProblemsBottomSheet(
-    String title,
-    String category,
-    String? token,
-    ScrollController scrollController,
-  ) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: 40,
-            height: 4,
-            margin: const EdgeInsets.only(top: 12),
-            decoration: BoxDecoration(
-              color: colorScheme.onSurfaceVariant.withOpacity(0.4),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-                const Spacer(),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: Icon(Icons.close, color: colorScheme.onSurfaceVariant),
-                ),
-              ],
-            ),
-          ),
-
-          Expanded(
-            child: FutureBuilder<List<Issue>>(
-              future: _fetchCategoryIssues(category, token),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.error_outline,
-                          size: 48,
-                          color: colorScheme.error,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Error loading issues',
-                          style: TextStyle(color: colorScheme.onSurfaceVariant),
-                        ),
-                      ],
-                    ),
-                  );
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.search_off,
-                          size: 48,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No issues found',
-                          style: TextStyle(color: colorScheme.onSurfaceVariant),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                final issues = snapshot.data!;
-                return ListView.separated(
-                  controller: scrollController,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: issues.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    return _buildBottomSheetIssueCard(issues[index]);
-                  },
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBottomSheetIssueCard(Issue issue) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.background,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: colorScheme.outline.withOpacity(0.1),
-          width: 1,
-        ),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          Navigator.pop(context);
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => SolutionsPage(issue: issue),
-            ),
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                issue.title,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurface,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                issue.description,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: colorScheme.onSurfaceVariant,
-                  height: 1.4,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<List<Issue>> _fetchCategoryIssues(
-    String category,
-    String? token,
-  ) async {
-    try {
-      final cubit = context.read<DashboardCubit>();
-      if (category == 'All') {
-        return await cubit.getCommonIssuesData(token: token);
-      } else {
-        return await cubit.getIssuesByCategoryData(category, token: token);
-      }
-    } catch (e) {
-      throw Exception('Failed to fetch issues: $e');
-    }
+    // TODO: Implement category bottom sheet with problems feature
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('$category issues coming soon')));
   }
 }

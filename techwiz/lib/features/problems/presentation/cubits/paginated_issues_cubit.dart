@@ -1,11 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../domain/usecases/get_paginated_issues.dart';
+import '../../domain/usecases/get_paginated_issues_usecase.dart';
 import 'paginated_issues_state.dart';
 
 class PaginatedIssuesCubit extends Cubit<PaginatedIssuesState> {
-  final GetPaginatedIssues getPaginatedIssues;
+  final GetPaginatedIssuesUseCase getPaginatedIssuesUseCase;
 
-  PaginatedIssuesCubit({required this.getPaginatedIssues})
+  PaginatedIssuesCubit({required this.getPaginatedIssuesUseCase})
     : super(PaginatedIssuesInitial());
 
   Future<void> loadPaginatedIssues({
@@ -16,7 +16,7 @@ class PaginatedIssuesCubit extends Cubit<PaginatedIssuesState> {
     emit(PaginatedIssuesLoading());
 
     try {
-      final paginatedIssues = await getPaginatedIssues(
+      final paginatedIssues = await getPaginatedIssuesUseCase(
         token: token,
         page: page,
         size: size,

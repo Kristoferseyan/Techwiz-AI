@@ -1,10 +1,10 @@
+import '../repositories/solutions_repository.dart';
 import '../entities/solution.dart';
-import '../repositories/dashboard_repository.dart';
 
-class GetSolutionsByProblemId {
-  final DashboardRepository repository;
+class GetSolutionsByProblemIdUseCase {
+  final SolutionsRepository repository;
 
-  GetSolutionsByProblemId(this.repository);
+  GetSolutionsByProblemIdUseCase(this.repository);
 
   Future<List<Solution>> call(int problemId, {String? token}) async {
     return await repository.getSolutionsByProblemId(problemId, token: token);
