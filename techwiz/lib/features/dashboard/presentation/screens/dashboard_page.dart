@@ -405,14 +405,8 @@ class _DashboardPageState extends State<DashboardPage> {
                 fontWeight: FontWeight.bold,
                 color: colorScheme.onSurface,
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              action.subtitle,
-              style: TextStyle(
-                fontSize: 12,
-                color: colorScheme.onSurfaceVariant,
-              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
