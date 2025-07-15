@@ -15,10 +15,15 @@ import 'package:techwiz/features/dashboard/data/dashboard_api_service.dart';
 import 'package:techwiz/features/dashboard/data/dashboard_repository_impl.dart';
 import 'package:techwiz/features/problems/data/problems_api_service.dart';
 import 'package:techwiz/features/problems/data/repositories/problems_repository_impl.dart';
+import 'package:techwiz/features/categories/data/categories_api_service.dart';
+import 'package:techwiz/features/categories/data/repositories/categories_repository_impl.dart';
 import 'package:techwiz/features/dashboard/domain/usecases/get_quick_actions_usecase.dart';
 import 'package:techwiz/features/dashboard/domain/usecases/get_recent_guides_usecase.dart';
 import 'package:techwiz/features/problems/domain/usecases/get_paginated_issues_usecase.dart';
+import 'package:techwiz/features/problems/domain/usecases/get_issues_by_category_usecase.dart';
+import 'package:techwiz/features/categories/domain/usecases/get_categories_detailed_usecase.dart';
 import 'package:techwiz/features/problems/presentation/cubits/paginated_issues_cubit.dart';
+import 'package:techwiz/features/problems/presentation/cubits/category_issues_cubit.dart';
 import 'package:techwiz/features/dashboard/presentation/cubits/dashboard_cubit.dart';
 import 'package:techwiz/features/dashboard/presentation/cubits/dashboard_state.dart';
 import 'package:techwiz/features/dashboard/presentation/screens/dashboard_page.dart';
@@ -38,6 +43,9 @@ Future<void> main() async {
   final problemsApiService = ProblemsApiService(httpClient);
   final problemsRepository = ProblemsRepositoryImpl(problemsApiService);
 
+  final categoriesApiService = CategoriesApiService(httpClient);
+  final categoriesRepository = CategoriesRepositoryImpl(categoriesApiService);
+
   runApp(
     MultiBlocProvider(
       providers: [
@@ -53,11 +61,21 @@ Future<void> main() async {
             DashboardInitial(),
             getQuickActionsUseCase: GetQuickActionsUseCase(dashboardRepository),
             getRecentGuidesUseCase: GetRecentGuidesUseCase(dashboardRepository),
+            getCategoriesDetailedUseCase: GetCategoriesDetailedUseCase(
+              categoriesRepository,
+            ),
           ),
         ),
         BlocProvider(
           create: (_) => PaginatedIssuesCubit(
             getPaginatedIssuesUseCase: GetPaginatedIssuesUseCase(
+              problemsRepository,
+            ),
+          ),
+        ),
+        BlocProvider(
+          create: (_) => CategoryIssuesCubit(
+            getIssuesByCategoryUseCase: GetIssuesByCategoryUseCase(
               problemsRepository,
             ),
           ),
