@@ -41,16 +41,24 @@ class AuthApiService {
     String email,
     List<int> roleId,
   ) async {
+    final requestBody = jsonEncode({
+      'username': username,
+      'password': password,
+      'email': email,
+      'roleIds': roleId,
+    });
+
+    print('Sending registration request with data: $requestBody');
+
     final response = await client.post(
       Uri.parse('$baseUrl/user/addUser'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'username': username,
-        'password': password,
-        'email': email,
-        'roleIds': roleId,
-      }),
+      body: requestBody,
     );
-    return response.statusCode == 201;
+
+    print('Registration response status: ${response.statusCode}');
+    print('Registration response body: ${response.body}');
+
+    return response.statusCode == 200 || response.statusCode == 201;
   }
 }

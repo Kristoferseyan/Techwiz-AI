@@ -23,7 +23,7 @@ class AuthRepositoryImpl implements AuthRepository {
     String password,
     String email,
     List<int> roleIds,
-  ) {
-    throw UnimplementedError();
+  ) async {
+    return await api.register(username, password, email, roleIds);
   }
 }

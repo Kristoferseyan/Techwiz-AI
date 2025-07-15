@@ -273,48 +273,6 @@ class _LoginPageState extends State<LoginPage> {
                               const SizedBox(height: 24),
 
                               Row(
-                                children: [
-                                  Expanded(
-                                    child: Divider(
-                                      color: AppColors.divider,
-                                      thickness: 1,
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                    ),
-                                    child: Text(
-                                      "or",
-                                      style: TextStyle(
-                                        color: AppColors.textSecondary,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: Divider(
-                                      color: AppColors.divider,
-                                      thickness: 1,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 24),
-
-                              CustomButton(
-                                text: "Continue as Guest",
-                                type: ButtonType.outline,
-                                onPressed: () {
-                                  Navigator.pushNamed(context, '/home');
-                                },
-                                height: 56,
-                                borderRadius: 16,
-                                fontSize: 16,
-                              ),
-                              const SizedBox(height: 16),
-
-                              Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
