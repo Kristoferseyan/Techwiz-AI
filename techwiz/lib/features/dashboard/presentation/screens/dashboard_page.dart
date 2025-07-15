@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:techwiz/utils/colors.dart';
 import 'package:techwiz/utils/theme_manager.dart';
 import 'package:techwiz/features/auth/presentation/cubits/auth_cubit.dart';
 import 'package:techwiz/features/auth/presentation/cubits/auth_state.dart';
 import '../cubits/dashboard_cubit.dart';
 import '../cubits/dashboard_state.dart';
-import '../../domain/entities/quick_action.dart';
 import '../../domain/entities/issue.dart';
-import '../../domain/entities/guide.dart';
 import 'solutions_page.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -141,15 +138,9 @@ class _DashboardPageState extends State<DashboardPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildWelcomeSection(),
-                  const SizedBox(height: 24),
                   _buildSearchBar(),
                   const SizedBox(height: 32),
-                  _buildQuickActions(state.quickActions),
-                  const SizedBox(height: 32),
                   _buildCategories(state.categories),
-                  const SizedBox(height: 32),
-                  _buildRecentGuides(state.recentGuides),
                 ],
               ),
             );
@@ -165,63 +156,6 @@ class _DashboardPageState extends State<DashboardPage> {
         icon: const Icon(Icons.emergency),
         label: const Text('Emergency Help'),
       ),
-    );
-  }
-
-  Widget _buildWelcomeSection() {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return BlocBuilder<AuthCubit, AuthState>(
-      builder: (context, state) {
-        String welcomeText = 'Welcome to TechWiz';
-        if (state is AuthSuccess) {
-          welcomeText = 'Welcome back, ${state.session.username}!';
-        }
-
-        return Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                colorScheme.primary.withOpacity(0.8),
-                colorScheme.primary.withOpacity(0.6),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      welcomeText,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Get instant help with your computer problems',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: colorScheme.onPrimary.withOpacity(0.9),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(Icons.support_agent, size: 48, color: colorScheme.onPrimary),
-            ],
-          ),
-        );
-      },
     );
   }
 
@@ -288,133 +222,6 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildQuickActions(List<QuickAction> quickActions) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    if (quickActions.isEmpty) {
-      quickActions = [
-        const QuickAction(
-          id: '1',
-          title: 'Slow PC',
-          subtitle: 'Speed up your computer',
-          iconName: 'speed',
-          colorCode: '#2196F3',
-          route: '/slow-pc',
-        ),
-        const QuickAction(
-          id: '2',
-          title: 'No Internet',
-          subtitle: 'Fix connection issues',
-          iconName: 'wifi_off',
-          colorCode: '#FF9800',
-          route: '/no-internet',
-        ),
-        const QuickAction(
-          id: '3',
-          title: 'No Sound',
-          subtitle: 'Audio troubleshooting',
-          iconName: 'volume_off',
-          colorCode: '#4CAF50',
-          route: '/no-sound',
-        ),
-        const QuickAction(
-          id: '4',
-          title: 'Won\'t Start',
-          subtitle: 'Boot problems',
-          iconName: 'power_off',
-          colorCode: '#F44336',
-          route: '/wont-start',
-        ),
-      ];
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Quick Fixes',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: colorScheme.onSurface,
-          ),
-        ),
-        const SizedBox(height: 16),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: 1.2,
-          ),
-          itemCount: quickActions.length,
-          itemBuilder: (context, index) {
-            final action = quickActions[index];
-            return _buildQuickActionCard(action);
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuickActionCard(QuickAction action) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    Color actionColor = _parseColor(action.colorCode);
-    IconData actionIcon = _parseIcon(action.iconName);
-
-    return GestureDetector(
-      onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Opening ${action.title} help...')),
-        );
-      },
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: colorScheme.shadow.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: actionColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(actionIcon, color: actionColor, size: 24),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              action.title,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: colorScheme.onSurface,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildCategories(List<String> categories) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -464,132 +271,6 @@ class _DashboardPageState extends State<DashboardPage> {
           },
         ),
       ],
-    );
-  }
-
-  Widget _buildRecentGuides(List<Guide> guides) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    if (guides.isEmpty) {
-      guides = [
-        Guide(
-          id: '1',
-          title: 'Fix Overheating Laptop',
-          iconName: 'laptop_mac',
-          duration: '15 min',
-          category: 'Hardware',
-          createdAt: DateTime.now(),
-        ),
-        Guide(
-          id: '2',
-          title: 'Update Windows Drivers',
-          iconName: 'system_update',
-          duration: '8 min',
-          category: 'Software',
-          createdAt: DateTime.now(),
-        ),
-        Guide(
-          id: '3',
-          title: 'Clean Temporary Files',
-          iconName: 'cleaning_services',
-          duration: '5 min',
-          category: 'Performance',
-          createdAt: DateTime.now(),
-        ),
-      ];
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Recently Added Guides',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: colorScheme.onSurface,
-          ),
-        ),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 200,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: guides.length,
-            itemBuilder: (context, index) {
-              return _buildRecentGuideCard(guides[index]);
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRecentGuideCard(Guide guide) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    IconData guideIcon = _parseIcon(guide.iconName);
-
-    return Container(
-      width: 160,
-      margin: const EdgeInsets.only(right: 16),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: InkWell(
-        onTap: () {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Opening ${guide.title}...')));
-        },
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: colorScheme.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(guideIcon, color: colorScheme.primary, size: 24),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                guide.title,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.onSurface,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const Spacer(),
-              Text(
-                guide.duration,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 
@@ -660,14 +341,6 @@ class _DashboardPageState extends State<DashboardPage> {
         );
       },
     );
-  }
-
-  Color _parseColor(String colorCode) {
-    try {
-      return Color(int.parse(colorCode.replaceFirst('#', '0xFF')));
-    } catch (e) {
-      return AppColors.info;
-    }
   }
 
   Widget _buildViewAllCard() {
@@ -1162,27 +835,6 @@ class _DashboardPageState extends State<DashboardPage> {
       }
     } catch (e) {
       throw Exception('Failed to fetch issues: $e');
-    }
-  }
-
-  IconData _parseIcon(String iconName) {
-    switch (iconName.toLowerCase()) {
-      case 'speed':
-        return Icons.speed;
-      case 'wifi_off':
-        return Icons.wifi_off;
-      case 'volume_off':
-        return Icons.volume_off;
-      case 'power_off':
-        return Icons.power_off;
-      case 'laptop_mac':
-        return Icons.laptop_mac;
-      case 'system_update':
-        return Icons.system_update;
-      case 'cleaning_services':
-        return Icons.cleaning_services;
-      default:
-        return Icons.help_outline;
     }
   }
 }
