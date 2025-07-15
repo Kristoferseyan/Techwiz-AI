@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +30,10 @@ public class ProblemServices {
         return problems.stream()
                     .map(ProblemMapper::toDto)
                     .collect(Collectors.toList());
+    }
+
+    public Page<ProblemsDto> displayPaginatedProblems(Pageable pageable){
+        return problemRepository.findAll(pageable).map(ProblemMapper::toDto);
     }
 
     public List<ProblemsDto> displayFeaturedProblems(){

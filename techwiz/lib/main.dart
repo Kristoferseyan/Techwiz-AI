@@ -18,6 +18,9 @@ import 'package:techwiz/features/dashboard/domain/usecases/get_common_issues.dar
 import 'package:techwiz/features/dashboard/domain/usecases/get_recent_guides.dart';
 import 'package:techwiz/features/dashboard/domain/usecases/get_categories.dart';
 import 'package:techwiz/features/dashboard/domain/usecases/search_issues.dart';
+import 'package:techwiz/features/dashboard/domain/usecases/get_paginated_issues.dart';
+import 'package:techwiz/features/dashboard/presentation/cubits/paginated_issues_cubit.dart';
+import 'package:techwiz/features/dashboard/presentation/cubits/paginated_issues_state.dart';
 import 'package:techwiz/features/dashboard/domain/usecases/get_issues_by_category.dart';
 import 'package:techwiz/features/dashboard/presentation/cubits/dashboard_cubit.dart';
 import 'package:techwiz/features/dashboard/presentation/cubits/dashboard_state.dart';
@@ -54,6 +57,11 @@ Future<void> main() async {
             getCategories: GetCategories(dashboardRepository),
             searchIssues: SearchIssues(dashboardRepository),
             getIssuesByCategory: GetIssuesByCategory(dashboardRepository),
+          ),
+        ),
+        BlocProvider(
+          create: (_) => PaginatedIssuesCubit(
+            getPaginatedIssues: GetPaginatedIssues(dashboardRepository),
           ),
         ),
       ],

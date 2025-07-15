@@ -7,6 +7,7 @@ import '../cubits/dashboard_cubit.dart';
 import '../cubits/dashboard_state.dart';
 import '../../domain/entities/issue.dart';
 import 'solutions_page.dart';
+import 'paginated_issues_page.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -370,7 +371,12 @@ class _DashboardPageState extends State<DashboardPage> {
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: () {
-            _showAllProblemsBottomSheet();
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const PaginatedIssuesPage(),
+              ),
+            );
           },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),

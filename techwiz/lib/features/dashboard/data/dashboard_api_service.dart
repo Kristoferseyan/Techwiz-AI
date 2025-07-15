@@ -5,6 +5,8 @@ import '../domain/entities/quick_action.dart';
 import '../domain/entities/issue.dart';
 import '../domain/entities/guide.dart';
 import '../domain/entities/solution.dart';
+import '../domain/entities/solution_step.dart';
+import '../domain/entities/paginated_response.dart';
 
 class DashboardApiService {
   final http.Client httpClient;
@@ -46,18 +48,46 @@ class DashboardApiService {
   Future<List<Issue>> getCommonIssues({String? token}) async {
     try {
       final response = await httpClient.get(
-        Uri.parse('$baseUrl/problems'),
+        Uri.parse('$baseUrl/problems/paginatedProblems'),
         headers: _getHeaders(token),
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        final List<dynamic> data = responseData['content'] ?? [];
         return data.map((json) => _issueFromProblemsDto(json)).toList();
       } else {
         throw Exception('Failed to load common issues: ${response.statusCode}');
       }
     } catch (e) {
       throw Exception('Failed to load common issues: $e');
+    }
+  }
+
+  Future<PaginatedResponse<Issue>> getPaginatedIssues({
+    String? token,
+    int page = 0,
+    int size = 10,
+  }) async {
+    try {
+      final response = await httpClient.get(
+        Uri.parse('$baseUrl/problems/paginatedProblems?page=$page&size=$size'),
+        headers: _getHeaders(token),
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        return PaginatedResponse.fromJson(
+          responseData,
+          (json) => _issueFromProblemsDto(json),
+        );
+      } else {
+        throw Exception(
+          'Failed to load paginated issues: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Failed to load paginated issues: $e');
     }
   }
 
@@ -94,12 +124,13 @@ class DashboardApiService {
   Future<List<Issue>> searchIssues(String query, {String? token}) async {
     try {
       final response = await httpClient.get(
-        Uri.parse('$baseUrl/problems'),
+        Uri.parse('$baseUrl/problems/paginatedProblems'),
         headers: _getHeaders(token),
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        final List<dynamic> data = responseData['content'] ?? [];
         final allIssues = data
             .map((json) => _issueFromProblemsDto(json))
             .toList();
@@ -123,12 +154,13 @@ class DashboardApiService {
     try {
       if (category == 'All') {
         final response = await httpClient.get(
-          Uri.parse('$baseUrl/problems'),
+          Uri.parse('$baseUrl/problems/paginatedProblems'),
           headers: _getHeaders(token),
         );
 
         if (response.statusCode == 200) {
-          final List<dynamic> data = json.decode(response.body);
+          final Map<String, dynamic> responseData = json.decode(response.body);
+          final List<dynamic> data = responseData['content'] ?? [];
           return data.map((json) => _issueFromProblemsDto(json)).toList();
         } else {
           throw Exception('Failed to load all issues: ${response.statusCode}');
@@ -177,6 +209,31 @@ class DashboardApiService {
     }
   }
 
+  Future<List<SolutionStep>> getSolutionStepsBySolutionId(
+    int solutionId, {
+    String? token,
+  }) async {
+    try {
+      final response = await httpClient.get(
+        Uri.parse(
+          '$baseUrl/solution-steps/getSolutionStepBySolutionId/$solutionId',
+        ),
+        headers: _getHeaders(token),
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        return data.map((json) => SolutionStep.fromJson(json)).toList();
+      } else {
+        throw Exception(
+          'Failed to load solution steps: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Failed to load solution steps: $e');
+    }
+  }
+
   QuickAction _quickActionFromProblemsDto(
     Map<String, dynamic> json,
     int index,
@@ -211,6 +268,7 @@ class DashboardApiService {
 
   Solution _solutionFromDto(Map<String, dynamic> json) {
     return Solution(
+      id: json['id'] ?? 0,
       title: json['title'] ?? 'Solution',
       description: json['description'] ?? 'No description available',
     );

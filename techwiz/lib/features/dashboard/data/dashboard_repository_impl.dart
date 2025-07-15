@@ -1,8 +1,11 @@
+import 'package:techwiz/features/dashboard/domain/entities/solution_step.dart';
+
 import '../domain/repositories/dashboard_repository.dart';
 import '../domain/entities/quick_action.dart';
 import '../domain/entities/issue.dart';
 import '../domain/entities/guide.dart';
 import '../domain/entities/solution.dart';
+import '../domain/entities/paginated_response.dart';
 import 'dashboard_api_service.dart';
 
 class DashboardRepositoryImpl implements DashboardRepository {
@@ -49,5 +52,29 @@ class DashboardRepositoryImpl implements DashboardRepository {
     String? token,
   }) async {
     return await apiService.getSolutionsByProblemId(problemId, token: token);
+  }
+
+  @override
+  Future<List<SolutionStep>> getSolutionStepsBySolutionId(
+    int solutionId, {
+    String? token,
+  }) async {
+    return await apiService.getSolutionStepsBySolutionId(
+      solutionId,
+      token: token,
+    );
+  }
+
+  @override
+  Future<PaginatedResponse<Issue>> getPaginatedIssues({
+    String? token,
+    int page = 0,
+    int size = 10,
+  }) async {
+    return await apiService.getPaginatedIssues(
+      token: token,
+      page: page,
+      size: size,
+    );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/solution.dart';
+import '../../domain/entities/solution_step.dart';
 import '../../domain/entities/issue.dart';
 import '../../../auth/presentation/cubits/auth_cubit.dart';
 import '../../../auth/presentation/cubits/auth_state.dart';
@@ -235,85 +236,170 @@ class _SolutionsPageState extends State<SolutionsPage> {
     int stepNumber,
     ColorScheme colorScheme,
   ) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+        side: BorderSide(color: colorScheme.outline.withOpacity(0.2)),
+      ),
+      child: ExpansionTile(
+        tilePadding: const EdgeInsets.all(20),
+        childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: colorScheme.secondary,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Center(
+            child: Text(
+              stepNumber.toString(),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSecondary,
+              ),
+            ),
+          ),
+        ),
+        title: Text(
+          solution.title,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: colorScheme.onSurface,
+          ),
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Text(
+            solution.description,
+            style: TextStyle(
+              fontSize: 14,
+              color: colorScheme.onSurfaceVariant,
+              height: 1.4,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        trailing: Icon(Icons.expand_more, color: colorScheme.primary),
+        children: [
+          FutureBuilder<List<SolutionStep>>(
+            future: _fetchSolutionSteps(solution.id),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              } else if (snapshot.hasError) {
+                return Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Text(
+                    'Could not load detailed steps',
+                    style: TextStyle(
+                      color: colorScheme.error,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                );
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Text(
+                    'No detailed steps available for this solution.',
+                    style: TextStyle(
+                      color: colorScheme.onSurfaceVariant,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                );
+              }
+
+              final steps = snapshot.data!;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Divider(color: colorScheme.outline.withOpacity(0.3)),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Detailed Steps:',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  ...steps.map((step) => _buildStepItem(step, colorScheme)),
+                ],
+              );
+            },
           ),
         ],
       ),
-      child: Column(
+    );
+  }
+
+  Widget _buildStepItem(SolutionStep step, ColorScheme colorScheme) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
+            width: 28,
+            height: 28,
             decoration: BoxDecoration(
-              color: colorScheme.secondaryContainer,
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(16),
+              color: colorScheme.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: colorScheme.primary, width: 2),
+            ),
+            child: Center(
+              child: Text(
+                step.stepNumber.toString(),
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.primary,
+                ),
               ),
             ),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: colorScheme.secondary,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Center(
-                    child: Text(
-                      stepNumber.toString(),
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onSecondary,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    solution.title,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.onSecondaryContainer,
-                    ),
-                  ),
-                ),
-                Icon(
-                  Icons.lightbulb_outline,
-                  color: colorScheme.secondary,
-                  size: 24,
-                ),
-              ],
-            ),
           ),
-
-          Padding(
-            padding: const EdgeInsets.all(20),
+          const SizedBox(width: 12),
+          Expanded(
             child: Text(
-              solution.description,
+              step.instruction,
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 15,
                 color: colorScheme.onSurface,
-                height: 1.6,
+                height: 1.4,
               ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  Future<List<SolutionStep>> _fetchSolutionSteps(int solutionId) async {
+    final authState = context.read<AuthCubit>().state;
+    String? token;
+    if (authState is AuthSuccess) {
+      token = authState.session.token;
+    }
+
+    try {
+      return await _apiService.getSolutionStepsBySolutionId(
+        solutionId,
+        token: token,
+      );
+    } catch (e) {
+      throw Exception('Failed to load solution steps: $e');
+    }
   }
 
   Widget _buildErrorCard(ColorScheme colorScheme, String error) {
