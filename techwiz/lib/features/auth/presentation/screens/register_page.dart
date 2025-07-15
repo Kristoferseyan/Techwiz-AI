@@ -130,7 +130,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
-                        borderSide: const BorderSide(
+                        borderSide: BorderSide(
                           color: AppColors.border,
                           width: 1,
                         ),
@@ -173,7 +173,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
-                        borderSide: const BorderSide(
+                        borderSide: BorderSide(
                           color: AppColors.border,
                           width: 1,
                         ),
@@ -230,7 +230,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
-                        borderSide: const BorderSide(
+                        borderSide: BorderSide(
                           color: AppColors.border,
                           width: 1,
                         ),
@@ -288,7 +288,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
-                        borderSide: const BorderSide(
+                        borderSide: BorderSide(
                           color: AppColors.border,
                           width: 1,
                         ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:techwiz/utils/theme_manager.dart';
 
 class AppColors {
   static const Color primary = Color(0xFF2563EB);
@@ -9,13 +10,48 @@ class AppColors {
   static const Color secondaryLight = Color(0xFF94A3B8);
   static const Color secondaryDark = Color(0xFF475569);
 
-  static const Color background = Color(0xFFFAFAFA);
-  static const Color surface = Color(0xFFFFFFFF);
-  static const Color surfaceVariant = Color(0xFFF1F5F9);
+  static const Color backgroundLight = Color(0xFFFAFAFA);
+  static const Color surfaceLight = Color(0xFFFFFFFF);
+  static const Color surfaceVariantLight = Color(0xFFF1F5F9);
+  static const Color textPrimaryLight = Color(0xFF0F172A);
+  static const Color textSecondaryLight = Color(0xFF64748B);
+  static const Color textTertiaryLight = Color(0xFF94A3B8);
+  static const Color inputBackgroundLight = Color(0xFFF8FAFC);
+  static const Color cardBackgroundLight = Color(0xFFFFFFFF);
+  static const Color borderLight = Color(0xFFE2E8F0);
+  static const Color dividerLight = Color(0xFFE2E8F0);
 
-  static const Color textPrimary = Color(0xFF0F172A);
-  static const Color textSecondary = Color(0xFF64748B);
-  static const Color textTertiary = Color(0xFF94A3B8);
+  static const Color backgroundDark = Color(0xFF0F172A);
+  static const Color surfaceDark = Color(0xFF1E293B);
+  static const Color surfaceVariantDark = Color(0xFF334155);
+  static const Color textPrimaryDark = Color(0xFFF8FAFC);
+  static const Color textSecondaryDark = Color(0xFF94A3B8);
+  static const Color textTertiaryDark = Color(0xFF64748B);
+  static const Color inputBackgroundDark = Color(0xFF334155);
+  static const Color cardBackgroundDark = Color(0xFF1E293B);
+  static const Color borderDark = Color(0xFF475569);
+  static const Color dividerDark = Color(0xFF475569);
+
+  static Color get background =>
+      ThemeManager().isDarkMode ? backgroundDark : backgroundLight;
+  static Color get surface =>
+      ThemeManager().isDarkMode ? surfaceDark : surfaceLight;
+  static Color get surfaceVariant =>
+      ThemeManager().isDarkMode ? surfaceVariantDark : surfaceVariantLight;
+  static Color get textPrimary =>
+      ThemeManager().isDarkMode ? textPrimaryDark : textPrimaryLight;
+  static Color get textSecondary =>
+      ThemeManager().isDarkMode ? textSecondaryDark : textSecondaryLight;
+  static Color get textTertiary =>
+      ThemeManager().isDarkMode ? textTertiaryDark : textTertiaryLight;
+  static Color get inputBackground =>
+      ThemeManager().isDarkMode ? inputBackgroundDark : inputBackgroundLight;
+  static Color get cardBackground =>
+      ThemeManager().isDarkMode ? cardBackgroundDark : cardBackgroundLight;
+  static Color get border =>
+      ThemeManager().isDarkMode ? borderDark : borderLight;
+  static Color get divider =>
+      ThemeManager().isDarkMode ? dividerDark : dividerLight;
 
   static const Color success = Color(0xFF059669);
   static const Color successLight = Color(0xFF10B981);
@@ -37,18 +73,11 @@ class AppColors {
   static const Color gray800 = Color(0xFF1E293B);
   static const Color gray900 = Color(0xFF0F172A);
 
-  static const Color border = Color(0xFFE2E8F0);
-  static const Color borderLight = Color(0xFFF1F5F9);
-  static const Color divider = Color(0xFFE2E8F0);
-
   static const Color shadow = Color(0x1A000000);
-
-  static const Color cardBackground = Color(0xFFFFFFFF);
-  static const Color inputBackground = Color(0xFFF8FAFC);
   static const Color disabled = Color(0xFFCBD5E1);
   static const Color disabledText = Color(0xFF94A3B8);
 
-  static ColorScheme get lightColorScheme => const ColorScheme.light(
+  static ColorScheme get lightColorScheme => ColorScheme.light(
     primary: primary,
     onPrimary: Colors.white,
     primaryContainer: primaryLight,
@@ -57,22 +86,22 @@ class AppColors {
     onSecondary: Colors.white,
     secondaryContainer: secondaryLight,
     onSecondaryContainer: secondaryDark,
-    surface: surface,
-    onSurface: textPrimary,
-    surfaceVariant: surfaceVariant,
-    onSurfaceVariant: textSecondary,
-    background: background,
-    onBackground: textPrimary,
+    surface: surfaceLight,
+    onSurface: textPrimaryLight,
+    surfaceVariant: surfaceVariantLight,
+    onSurfaceVariant: textSecondaryLight,
+    background: backgroundLight,
+    onBackground: textPrimaryLight,
     error: error,
     onError: Colors.white,
     errorContainer: errorLight,
     onErrorContainer: error,
-    outline: border,
-    outlineVariant: borderLight,
+    outline: borderLight,
+    outlineVariant: gray100,
     shadow: shadow,
   );
 
-  static ColorScheme get darkColorScheme => const ColorScheme.dark(
+  static ColorScheme get darkColorScheme => ColorScheme.dark(
     primary: primaryLight,
     onPrimary: gray900,
     primaryContainer: primaryDark,
@@ -81,31 +110,18 @@ class AppColors {
     onSecondary: gray900,
     secondaryContainer: secondaryDark,
     onSecondaryContainer: secondaryLight,
-    surface: gray800,
-    onSurface: gray100,
-    surfaceVariant: gray700,
-    onSurfaceVariant: gray300,
-    background: gray900,
-    onBackground: gray100,
+    surface: surfaceDark,
+    onSurface: textPrimaryDark,
+    surfaceVariant: surfaceVariantDark,
+    onSurfaceVariant: textSecondaryDark,
+    background: backgroundDark,
+    onBackground: textPrimaryDark,
     error: errorLight,
     onError: gray900,
     errorContainer: error,
     onErrorContainer: errorLight,
-    outline: gray600,
+    outline: borderDark,
     outlineVariant: gray700,
-    shadow: Color(0x33000000),
+    shadow: const Color(0x33000000),
   );
-}
-
-extension AppColorsExtension on BuildContext {
-  ColorScheme get colors => Theme.of(this).colorScheme;
-
-  Color get primaryColor => AppColors.primary;
-  Color get backgroundColor => AppColors.background;
-  Color get textPrimary => AppColors.textPrimary;
-  Color get textSecondary => AppColors.textSecondary;
-  Color get success => AppColors.success;
-  Color get warning => AppColors.warning;
-  Color get error => AppColors.error;
-  Color get info => AppColors.info;
 }
