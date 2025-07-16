@@ -278,20 +278,20 @@ class _DashboardPageState extends State<DashboardPage> {
                   );
                 },
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(12),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
                         Icons.emergency,
                         color: colorScheme.onError,
-                        size: 24,
+                        size: 22,
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       Text(
                         'Emergency',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 11,
                           fontWeight: FontWeight.w600,
                           color: colorScheme.onError,
                         ),
@@ -399,7 +399,7 @@ class _DashboardPageState extends State<DashboardPage> {
             crossAxisCount: 2,
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
-            childAspectRatio: 1.3,
+            childAspectRatio: 1.2,
           ),
           itemCount: categoryNames.length,
           itemBuilder: (context, index) {
@@ -585,13 +585,13 @@ class _DashboardPageState extends State<DashboardPage> {
             _showCategoryBottomSheet(category);
           },
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 48,
-                  height: 48,
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
                     color: categoryData['color'].withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
@@ -599,23 +599,25 @@ class _DashboardPageState extends State<DashboardPage> {
                   child: Icon(
                     categoryData['icon'],
                     color: categoryData['color'],
-                    size: 24,
+                    size: 22,
                   ),
                 ),
                 const Spacer(),
                 Text(
                   category,
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.w600,
                     color: colorScheme.onSurface,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 Text(
                   'View issues',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 11,
                     color: colorScheme.onSurfaceVariant,
                   ),
                 ),
