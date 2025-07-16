@@ -214,8 +214,6 @@ class _DashboardPageState extends State<DashboardPage> {
         ),
         onSubmitted: (query) {
           if (query.trim().isNotEmpty) {
-            // TODO: Implement search functionality with search feature
-            // Navigate to search results page or show search dialog
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Search functionality coming soon: "$query"'),
@@ -231,7 +229,6 @@ class _DashboardPageState extends State<DashboardPage> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    // Extract category names from the API response
     final categoryNames = categories.map((category) => category.name).toList();
 
     return Column(
@@ -577,7 +574,6 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
           child: Column(
             children: [
-              // Handle bar
               Container(
                 width: 40,
                 height: 4,
@@ -587,7 +583,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              // Header
+
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
                 child: Row(
@@ -639,23 +635,12 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
               ),
               const Divider(height: 1),
-              // Content
+
               Expanded(
-                child: BlocBuilder<CategoryIssuesCubit, CategoryIssuesState>(
-                  builder: (context, state) {
-                    // Trigger loading when building for the first time
-                    if (state is CategoryIssuesInitial) {
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        context
-                            .read<CategoryIssuesCubit>()
-                            .loadIssuesByCategory(
-                              category,
-                              token: _getAuthToken(),
-                            );
-                      });
-                    }
-                    return _buildCategoryIssuesList(scrollController, state);
-                  },
+                child: _CategoryIssuesWidget(
+                  category: category,
+                  scrollController: scrollController,
+                  authToken: _getAuthToken(),
                 ),
               ),
             ],
@@ -665,7 +650,59 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
+  String? _getAuthToken() {
+    final authState = context.read<AuthCubit>().state;
+    if (authState is AuthSuccess) {
+      return authState.session.token;
+    }
+    return null;
+  }
+}
+
+class _CategoryIssuesWidget extends StatefulWidget {
+  final String category;
+  final ScrollController scrollController;
+  final String? authToken;
+
+  const _CategoryIssuesWidget({
+    required this.category,
+    required this.scrollController,
+    this.authToken,
+  });
+
+  @override
+  State<_CategoryIssuesWidget> createState() => _CategoryIssuesWidgetState();
+}
+
+class _CategoryIssuesWidgetState extends State<_CategoryIssuesWidget> {
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<CategoryIssuesCubit>().reset();
+      context.read<CategoryIssuesCubit>().loadIssuesByCategory(
+        widget.category,
+        token: widget.authToken,
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<CategoryIssuesCubit, CategoryIssuesState>(
+      builder: (context, state) {
+        return _buildCategoryIssuesList(
+          context,
+          widget.scrollController,
+          state,
+        );
+      },
+    );
+  }
+
   Widget _buildCategoryIssuesList(
+    BuildContext context,
     ScrollController scrollController,
     CategoryIssuesState state,
   ) {
@@ -741,7 +778,7 @@ class _DashboardPageState extends State<DashboardPage> {
         itemCount: state.issues.length,
         itemBuilder: (context, index) {
           final issue = state.issues[index];
-          return _buildBottomSheetIssueCard(issue, colorScheme);
+          return _buildBottomSheetIssueCard(context, issue, colorScheme);
         },
       );
     }
@@ -749,7 +786,11 @@ class _DashboardPageState extends State<DashboardPage> {
     return const Center(child: CircularProgressIndicator());
   }
 
-  Widget _buildBottomSheetIssueCard(Issue issue, ColorScheme colorScheme) {
+  Widget _buildBottomSheetIssueCard(
+    BuildContext context,
+    Issue issue,
+    ColorScheme colorScheme,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -772,7 +813,7 @@ class _DashboardPageState extends State<DashboardPage> {
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
           onTap: () {
-            Navigator.pop(context); // Close bottom sheet first
+            Navigator.pop(context);
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -834,13 +875,5 @@ class _DashboardPageState extends State<DashboardPage> {
         ),
       ),
     );
-  }
-
-  String? _getAuthToken() {
-    final authState = context.read<AuthCubit>().state;
-    if (authState is AuthSuccess) {
-      return authState.session.token;
-    }
-    return null;
   }
 }

@@ -18,4 +18,8 @@ class CategoryIssuesCubit extends Cubit<CategoryIssuesState> {
       emit(CategoryIssuesError('Failed to load issues: ${e.toString()}'));
     }
   }
+
+  void reset() {
+    emit(CategoryIssuesInitial());
+  }
 }

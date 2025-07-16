@@ -69,6 +69,8 @@ class ProblemsApiService {
     String? token,
   }) async {
     try {
+      print('DEBUG: Fetching issues for category: "$category"');
+
       if (category == 'All') {
         final response = await httpClient.get(
           Uri.parse('$baseUrl/problems/paginatedProblems'),
@@ -84,23 +86,39 @@ class ProblemsApiService {
         }
       }
 
-      final categoryUrl =
-          '$baseUrl/problems/problemsByCategory/${Uri.encodeComponent(category)}';
-
-      final response = await httpClient.get(
-        Uri.parse(categoryUrl),
+      final categoryResponse = await httpClient.get(
+        Uri.parse('$baseUrl/category'),
         headers: _getHeaders(token),
       );
 
-      if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        return data.map((json) => _issueFromProblemsDto(json)).toList();
+      print('DEBUG: Category response status: ${categoryResponse.statusCode}');
+
+      if (categoryResponse.statusCode == 200) {
+        final List<dynamic> categories = json.decode(categoryResponse.body);
+        print('DEBUG: Found ${categories.length} categories');
+
+        final categoryData = categories.firstWhere(
+          (cat) => cat['name'] == category,
+          orElse: () => null,
+        );
+
+        if (categoryData != null && categoryData['problems'] != null) {
+          final List<dynamic> problems = categoryData['problems'];
+          print(
+            'DEBUG: Found ${problems.length} problems for category "$category"',
+          );
+          return problems.map((json) => _issueFromProblemsDto(json)).toList();
+        } else {
+          print('DEBUG: Category "$category" not found or has no problems');
+          return [];
+        }
       } else {
         throw Exception(
-          'Failed to load category "$category": ${response.statusCode}',
+          'Failed to load categories: ${categoryResponse.statusCode}',
         );
       }
     } catch (e) {
+      print('DEBUG: Error in getIssuesByCategory: $e');
       throw Exception('Failed to load issues by category: $e');
     }
   }
