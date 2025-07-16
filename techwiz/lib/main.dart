@@ -17,16 +17,21 @@ import 'package:techwiz/features/problems/data/problems_api_service.dart';
 import 'package:techwiz/features/problems/data/repositories/problems_repository_impl.dart';
 import 'package:techwiz/features/categories/data/categories_api_service.dart';
 import 'package:techwiz/features/categories/data/repositories/categories_repository_impl.dart';
+import 'package:techwiz/features/ai/data/ai_api_service.dart';
+import 'package:techwiz/features/ai/data/ai_repository_impl.dart';
 import 'package:techwiz/features/dashboard/domain/usecases/get_quick_actions_usecase.dart';
 import 'package:techwiz/features/dashboard/domain/usecases/get_recent_guides_usecase.dart';
 import 'package:techwiz/features/problems/domain/usecases/get_paginated_issues_usecase.dart';
 import 'package:techwiz/features/problems/domain/usecases/get_issues_by_category_usecase.dart';
 import 'package:techwiz/features/categories/domain/usecases/get_categories_detailed_usecase.dart';
+import 'package:techwiz/features/ai/domain/usecases/match_problems_usecase.dart';
 import 'package:techwiz/features/problems/presentation/cubits/paginated_issues_cubit.dart';
 import 'package:techwiz/features/problems/presentation/cubits/category_issues_cubit.dart';
 import 'package:techwiz/features/dashboard/presentation/cubits/dashboard_cubit.dart';
 import 'package:techwiz/features/dashboard/presentation/cubits/dashboard_state.dart';
+import 'package:techwiz/features/ai/presentation/cubits/ai_match_cubit.dart';
 import 'package:techwiz/features/dashboard/presentation/screens/dashboard_page.dart';
+import 'package:techwiz/features/ai/presentation/pages/ai_match_page.dart';
 import 'package:techwiz/utils/colors.dart';
 import 'package:techwiz/utils/theme_manager.dart';
 
@@ -45,6 +50,9 @@ Future<void> main() async {
 
   final categoriesApiService = CategoriesApiService(httpClient);
   final categoriesRepository = CategoriesRepositoryImpl(categoriesApiService);
+
+  final aiApiService = AiApiService(httpClient);
+  final aiRepository = AiRepositoryImpl(aiApiService);
 
   runApp(
     MultiBlocProvider(
@@ -80,6 +88,9 @@ Future<void> main() async {
             ),
           ),
         ),
+        BlocProvider(
+          create: (_) => AiMatchCubit(MatchProblemsUseCase(aiRepository)),
+        ),
       ],
       child: const MainApp(),
     ),
@@ -114,6 +125,7 @@ class MainApp extends StatelessWidget {
             '/': (context) => const LoginPage(),
             '/register': (context) => const RegisterPage(),
             '/home': (context) => const DashboardPage(),
+            '/ai': (context) => const AiMatchPage(),
           },
         );
       },

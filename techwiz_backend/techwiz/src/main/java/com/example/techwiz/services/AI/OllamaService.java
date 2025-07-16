@@ -18,6 +18,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import com.example.techwiz.dto.Ai.AiResponseDto;
+import com.example.techwiz.dto.Ai.ProblemMatchWithRelatedDto;
 import com.example.techwiz.model.Problems;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -36,7 +37,7 @@ public class OllamaService {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public AiResponseDto sendPromptForStructuredResponse(String prompt, String modelName) {
-        logger.info("🧠 Final prompt being sent to Ollama:\n{}", prompt);
+        logger.info(" Final prompt being sent to Ollama:\n{}", prompt);
         String responseText = sendPrompt(prompt, modelName);
         if (responseText.isEmpty()) {
             return fallbackResponse("Empty response from Ollama");
@@ -48,6 +49,23 @@ public class OllamaService {
         } catch (Exception e) {
             logger.warn("Could not parse AI response: {}", e.getMessage());
             return fallbackResponse(responseText);
+        }
+    }
+    public ProblemMatchWithRelatedDto sendPromptForRelatedResponse(String prompt, String modelName) {
+        logger.info("Final prompt being sent to Ollama:\n{}", prompt);
+        String responseText = sendPrompt(prompt, modelName);
+
+        if (responseText.isEmpty()) {
+            logger.warn("⚠️ Empty response from Ollama.");
+            return new ProblemMatchWithRelatedDto();
+        }
+
+        try {
+            String json = extractJsonFromResponse(responseText);
+            return objectMapper.readValue(json, ProblemMatchWithRelatedDto.class);
+        } catch (Exception e) {
+            logger.warn("Could not parse LLM response: {}", e.getMessage());
+            return new ProblemMatchWithRelatedDto();
         }
     }
 

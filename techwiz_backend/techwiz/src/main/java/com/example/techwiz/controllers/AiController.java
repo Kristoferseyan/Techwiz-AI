@@ -1,7 +1,6 @@
 package com.example.techwiz.controllers;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.techwiz.dto.Ai.AiResponseDto;
 import com.example.techwiz.dto.Ai.ProblemMatchDto;
 import com.example.techwiz.dto.Ai.ProblemMatchWithRelatedDto;
 import com.example.techwiz.jparepository.CategoryRepository;
@@ -36,7 +34,6 @@ public class AiController {
     @Autowired private ProblemRepository problemRepository;
     @Autowired private CategoryRepository categoryRepository;
 
-    
     @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'SUPERADMIN')")
     @PostMapping("/match")
     public ResponseEntity<ProblemMatchWithRelatedDto> matchProblem(@Valid @RequestBody ProblemMatchDto request) {
@@ -44,64 +41,39 @@ public class AiController {
                 request.getDeviceType(), request.getCategory());
 
         try {
-            // 1. Fetch problems and categories
+            // 1. Fetch all problems and categories
             List<Problems> allProblems = problemRepository.findAll();
             List<String> allCategoryNames = categoryRepository.findAll()
                 .stream()
                 .map(Categories::getName)
                 .toList();
 
-            // 2. Predict the best-fit category using LLM
+            // 2. Predict category from prompt
             String predictedCategory = ollamaService.getCategoryFromPrompt(request.getDescription(), allCategoryNames);
 
-            // 3. Filter by that category
+            // 3. Filter problems by predicted category
             List<Problems> filteredProblems = ollamaService.filterProblemsByCategory(allProblems, predictedCategory);
 
             // 4. Build prompt and send to LLM
             String prompt = promptBuilder.buildPrompt(request, filteredProblems);
-            AiResponseDto aiResult = ollamaService.sendPromptForStructuredResponse(prompt, null);
+            ProblemMatchWithRelatedDto aiResult = ollamaService.sendPromptForRelatedResponse(prompt, null);
 
-            // 5. Prepare the response DTO
-            ProblemMatchWithRelatedDto response = new ProblemMatchWithRelatedDto();
-
-            if (aiResult.getMatchedProblemId() != null) {
-                response.setMatchedProblemIds(List.of(aiResult.getMatchedProblemId()));
-            } else {
-                response.setMatchedProblemIds(List.of());
-            }
-
-            List<ProblemMatchWithRelatedDto.RelatedProblemDto> related = filteredProblems.stream()
-                .filter(p -> aiResult.getMatchedProblemId() == null || !p.getId().equals(aiResult.getMatchedProblemId()))
-                .map(p -> new ProblemMatchWithRelatedDto.RelatedProblemDto(p.getId(), p.getName()))
-                .collect(Collectors.toList());
-
-            response.setRelatedProblems(related);
-
-            logger.info("AI match done (Category: {}) → Match ID: {}, Confidence: {}%",
+            logger.info("AI match done (Category: {}) → Matches: {} | Related: {}",
                 predictedCategory,
-                aiResult.getMatchedProblemId(),
-                aiResult.getConfidence()
+                aiResult.getMatchedProblems() != null ? aiResult.getMatchedProblems().size() : 0,
+                aiResult.getRelatedProblems() != null ? aiResult.getRelatedProblems().size() : 0
             );
 
-            return ResponseEntity.ok(response);
+            // 5. Return what the AI already structured — no need to re-map
+            return ResponseEntity.ok(aiResult);
+
         } catch (Exception e) {
             logger.error("Error during AI matching", e);
 
             ProblemMatchWithRelatedDto errorResponse = new ProblemMatchWithRelatedDto();
-            errorResponse.setMatchedProblemIds(List.of());
+            errorResponse.setMatchedProblems(List.of());
             errorResponse.setRelatedProblems(List.of());
-
             return ResponseEntity.ok(errorResponse);
         }
-    }
-    
-    private AiResponseDto createErrorResponse(String errorMessage) {
-        AiResponseDto errorResponse = new AiResponseDto();
-        errorResponse.setMatchedProblemId(null);
-        errorResponse.setConfidence(0);
-        errorResponse.setReasoning("Error occurred during processing");
-        errorResponse.setFallbackAdvice("Unable to process request: " + errorMessage + 
-                                      ". Please try again or contact support for assistance.");
-        return errorResponse;
     }
 }

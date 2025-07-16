@@ -46,18 +46,25 @@ public class PromptBuilder {
         }
 
         sb.append("Respond ONLY with a valid JSON object — do not include explanations or notes outside the JSON.\n");
-        sb.append("Important: Use only the numeric ID (e.g., 31), not a string like \"ID: 31\".\n\n");
+        sb.append("Important: Use only the exact JSON format shown below — no extra text, no code blocks.\n\n");
+
+        sb.append("Respond ONLY with a valid JSON object — do not include explanations or notes outside the JSON.\n");
+        sb.append("Important: Use only numeric IDs (e.g., 31), not strings like \"ID: 31\".\n\n");
 
         sb.append("Instructions:\n");
-        sb.append("Analyze the user report and match it with the most relevant known problem. Return the result in JSON format exactly like this:\n");
+        sb.append("Analyze the user's report and return the result in the following JSON format:\n");
         sb.append("{\n");
-        sb.append("  \"matchedProblemId\": <integer>,\n");
-        sb.append("  \"confidence\": <number from 0 to 100>,\n");
-        sb.append("  \"reasoning\": \"Explain briefly why this problem matches\",\n");
-        sb.append("  \"recommendedSolution\": \"Title of the matched solution\",\n");
-        sb.append("  \"prioritySteps\": [\"Step 1\", \"Step 2\", \"Step 3\"]\n");
+        sb.append("  \"matchedProblems\": [\n");
+        sb.append("    { \"id\": 1, \"name\": \"Matched Problem Name\" }\n");
+        sb.append("  ],\n");
+        sb.append("  \"relatedProblems\": [\n");
+        sb.append("    { \"id\": 2, \"name\": \"Related Problem 1\" },\n");
+        sb.append("    { \"id\": 3, \"name\": \"Related Problem 2\" }\n");
+        sb.append("  ]\n");
         sb.append("}\n\n");
-        sb.append("If you are not confident (under 60%), return null for matchedProblemId and suggest general troubleshooting advice.\n");
+        sb.append("If there is no relevant match, return an empty array for \"matchedProblemIds\".\n");
+        sb.append("If there are no related problems, return an empty list for \"relatedProblems\".\n");
+        sb.append("Return ONLY valid JSON. No explanations, notes, or extra text.\n");
 
         return sb.toString();
     }
