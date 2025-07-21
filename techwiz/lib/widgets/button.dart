@@ -20,7 +20,7 @@ class CustomButton extends StatelessWidget {
   final bool enabled;
 
   const CustomButton({
-    Key? key,
+    super.key,
     required this.text,
     this.onPressed,
     this.type = ButtonType.primary,
@@ -36,7 +36,7 @@ class CustomButton extends StatelessWidget {
     this.fontSize = 16.0,
     this.fontWeight = FontWeight.w600,
     this.enabled = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

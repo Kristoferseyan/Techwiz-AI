@@ -82,7 +82,7 @@ class _PaginatedIssuesPageState extends State<PaginatedIssuesPage>
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: CustomScrollView(
         slivers: [
           SliverAppBar.large(
@@ -393,7 +393,7 @@ class _PaginatedIssuesPageState extends State<PaginatedIssuesPage>
                   label: const Text('Previous'),
                   style: FilledButton.styleFrom(
                     backgroundColor: paginatedIssues.isFirst
-                        ? colorScheme.surfaceVariant
+                        ? colorScheme.surfaceContainerHighest
                         : colorScheme.primary,
                     foregroundColor: paginatedIssues.isFirst
                         ? colorScheme.onSurfaceVariant
@@ -415,7 +415,7 @@ class _PaginatedIssuesPageState extends State<PaginatedIssuesPage>
                   icon: const Icon(Icons.chevron_right, size: 18),
                   style: FilledButton.styleFrom(
                     backgroundColor: paginatedIssues.isLast
-                        ? colorScheme.surfaceVariant
+                        ? colorScheme.surfaceContainerHighest
                         : colorScheme.primary,
                     foregroundColor: paginatedIssues.isLast
                         ? colorScheme.onSurfaceVariant

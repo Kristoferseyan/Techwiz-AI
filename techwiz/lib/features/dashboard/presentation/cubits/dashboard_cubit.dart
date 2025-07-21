@@ -13,11 +13,11 @@ class DashboardCubit extends Cubit<DashboardState> {
   final GetCategoriesDetailedUseCase getCategoriesDetailedUseCase;
 
   DashboardCubit(
-    DashboardState initialState, {
+    super.initialState, {
     required this.getQuickActionsUseCase,
     required this.getRecentGuidesUseCase,
     required this.getCategoriesDetailedUseCase,
-  }) : super(initialState);
+  });
 
   Future<void> loadDashboard({String? token}) async {
     emit(DashboardLoading());
